@@ -111,7 +111,7 @@ for k, v in pairs(DefaultSettings) do
 end
 
 for i, v in pairs(game:GetService("ReplicatedStorage").Remote.ReturnData:InvokeServer()) do
-    print(v)
+    print(i, v)
 end
 function MacroPlayback()
     -- check if its in game first or not and if money exists.
