@@ -84,8 +84,7 @@ function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
         save_data[profile_name] = macro_table
-        writefile(folder_name .. "\\" .. profile_name .. ".json",
-                  game:GetService("HttpService"):JSONEncode(save_data))
+        writefile(folder_name .. "\\" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
 
@@ -95,9 +94,13 @@ function Save()
 end
 
 Save()
-for k, v in pairs(DefaultSettings) do if JSON[k] == nil then JSON[k] = v end end
+for k, v in pairs(DefaultSettings) do
+    if JSON[k] == nil then
+        JSON[k] = v
+    end
+end
 
-for i, v in pairs(game:GetService("ReplicatedStorage").Remotes.ReturnData) do
+for i, v in pairs(game:GetService("ReplicatedStorage").Remotes.ReturnData:InvokeServer()) do
     print(v)
 end
 function MacroPlayback()
