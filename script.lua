@@ -110,7 +110,7 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
-for i, v in pairs(game:GetService("ReplicatedStorage").Remotes.ReturnData:InvokeServer()) do
+for i, v in pairs(game:GetService("ReplicatedStorage").Remote.ReturnData:InvokeServer()) do
     print(v)
 end
 function MacroPlayback()
@@ -262,3 +262,5 @@ game_metatable.__namecall = newcclosure(function(self, ...)
         return namecall_original(self, ...)
     end
 end)
+
+-- jjgeongezubgezbgihegey_geuizegog_e_go_egeheuiuhgeihgeihegiohegihegiezghiuohegzhiegzieguotoezghiheghegoegzheiguohegzhiezghiegheghzeghzihegzehgziezghiuge
