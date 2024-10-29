@@ -26,7 +26,7 @@ local DefaultSettings = {
     macro_record = false,
     macro_playback = false,
     auto_join_game = false,
-    auto_join_level = 1,
+    auto_join_level = 1
 }
 
 if not isfolder("SapphireHub") then
@@ -63,7 +63,7 @@ if not isfolder(folder_name) then
 end
 
 if #listfiles(folder_name) == 0 then
-    writefile(folder_name .. "\\" .. "Default Profile.json",
+    writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 end
 
@@ -94,7 +94,7 @@ function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
         save_data[profile_name] = macro_table
-        writefile(folder_name .. "\\" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
+        writefile(folder_name .. "/" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
 
@@ -238,29 +238,34 @@ end
 local game_metatable = getrawmetatable(game)
 local namecall_original = game_metatable.__namecall
 
-setreadonly(game_metatable, true)
+setreadonly(game_metatable, false)
 
+-- Modify the metatable
 game_metatable.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
-    local script = getcallingscript()
-
     local Args = {...}
 
-    if Args ~= nil and (method == "FireServer" or method == "InvokeServer") then
-        if self.Name == "SpawnUnit" then
-
-        elseif self.Name == "UpgradeUnit" then
-
-        elseif self.Name == "ChangeUnitModeFunction" then
-
-        elseif self.Name == "SellUnit" then
-
-        elseif self.Name == "SkipEvent" then
-
+    if Args and (method == "FireServer" or method == "InvokeServer") then
+        if JSON.macro_record and not JSON.macro_playback then
+            if self.Name == "SpawnUnit" then
+                -- Logic for SpawnUnit
+            elseif self.Name == "UpgradeUnit" then
+                -- Logic for UpgradeUnit
+            elseif self.Name == "ChangeUnitModeFunction" then
+                -- Logic for ChangeUnitModeFunction
+            elseif self.Name == "SellUnit" then
+                -- Logic for SellUnit
+            elseif self.Name == "SkipEvent" then
+                -- Logic for SkipEvent
+            end
+            task.spawn(function() Save() end)
         end
-
-        return namecall_original(self, ...)
     end
+    return namecall_original(self, ...)
 end)
 
+setreadonly(game_metatable, true)
+
+local Player = game:GetService("Players").LocalPlayer
+repeat task.wait() until #Player.Data:GetChildren() > 0
 -- jjgeongezubgezbgihegey_geuizegog_e_go_egeheuiuhgeihgeihegiohegihegiezghiuohegzhiegzieguotoezghiheghegoegzheiguohegzhiezghiegheghzeghzihegzehgziezghiuge
