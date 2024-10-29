@@ -100,7 +100,7 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
-for i, v in pairs(game:GetService("ReplicatedStorage").Remotes.ReturnData:InvokeServer()) do
+for i, v in pairs(game:GetService("ReplicatedStorage").Remote.ReturnData:InvokeServer()) do
     print(v)
 end
 function MacroPlayback()
