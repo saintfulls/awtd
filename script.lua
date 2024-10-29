@@ -17,7 +17,17 @@ local teleportOnFailed = po.ChildAdded:Connect(function(a)
     end
 end)
 
-local DefaultSettings = {}
+local DefaultSettings = {
+    macro_profile = "Default Profile",
+    macro_sell = true,
+    macro_changepriority = true,
+    macro_specialmove = true,
+    macro_skipwave = false,
+    macro_record = false,
+    macro_playback = false,
+    auto_join_game = false,
+    auto_join_level = 1,
+}
 
 if not isfolder("SapphireHub") then
     makefolder("SapphireHub")
@@ -100,7 +110,7 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
-for i, v in pairs(game:GetService("ReplicatedStorage").Remote.ReturnData:InvokeServer()) do
+for i, v in pairs(game:GetService("ReplicatedStorage").Remotes.ReturnData:InvokeServer()) do
     print(v)
 end
 function MacroPlayback()
@@ -228,7 +238,7 @@ end
 local game_metatable = getrawmetatable(game)
 local namecall_original = game_metatable.__namecall
 
-setreadonly(game_metatable, false)
+setreadonly(game_metatable, true)
 
 game_metatable.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
