@@ -368,7 +368,6 @@ local Button = Tabs.Macro:CreateButton({
     Name = "Create Profile",
     Callback = function()
         if Macros[profile_name] ~= nil then
-            venyx:Notify("Macro Profile", "Macro already exists: " .. profile_name)
             Rayfield:Notify({
                 Title = "Macro Profile",
                 Content = "Macro already exists :" .. profile_name,
