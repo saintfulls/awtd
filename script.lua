@@ -84,23 +84,21 @@ end
 local function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         -- Check if profile_name is a string
-        if type(profile_name) == "table" then
-            local save_data = {
-                [profile_name] = macro_table
-            }
-            local path = folder_name .. "/" .. profile_name .. ".json"
 
-            -- Use pcall to handle any potential errors in writing
-            local success, err = pcall(function()
-                writefile(path, game:GetService("HttpService"):JSONEncode(save_data))
-            end)
+        local save_data = {
+            [profile_name] = macro_table
+        }
+        local path = folder_name .. "/" .. profile_name .. ".json"
 
-            if not success then
-                warn("Failed to save file at " .. path .. ": " .. tostring(err))
-            end
-        else
-            warn("Profile name is not a table: " .. tostring(profile_name))
+        -- Use pcall to handle any potential errors in writing
+        local success, err = pcall(function()
+            writefile(path, game:GetService("HttpService"):JSONEncode(save_data))
+        end)
+
+        if not success then
+            warn("Failed to save file at " .. path .. ": " .. tostring(err))
         end
+
     end
 end
 
@@ -120,7 +118,6 @@ local function Save()
 end
 
 Save()
-
 
 for k, v in pairs(DefaultSettings) do
     if JSON[k] == nil then
