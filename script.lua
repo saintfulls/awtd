@@ -59,9 +59,15 @@ if not isfolder(folder_name) then
     makefolder(folder_name)
 end
 
+if #listfiles(folder_name) == 0 then
+    writefile(folder_name .. "/" .. "Default Profile.json",
+              game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
+end
+
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
-        local json_content = game:GetService("HttpService"):JSONDecode(readfile(file))
+        local json_content = game:GetService("HttpService"):JSONDecode(readfile(
+                                                                           file))
 
         for k, v in pairs(json_content) do
             if Macros[k] ~= nil then
@@ -70,50 +76,28 @@ for _, file in pairs(listfiles(folder_name)) do
                 Macros[k] = v
             end
         end
-    end) then
-        print("Error reading file: " .. file)
-    end
+    end) then print("Error reading file: " .. file) end
 end
+
 if not pcall(function()
     JSON = game:GetService("HttpService"):JSONDecode(readfile(SettingsFile))
 end) then
-    writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(DefaultSettings))
+    writefile(SettingsFile,
+              game:GetService("HttpService"):JSONEncode(DefaultSettings))
     JSON = DefaultSettings
 end
 
-local function SaveMacros()
+function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
-        -- Check if profile_name is a string
-
-        local save_data = {
-            [profile_name] = macro_table
-        }
-        local path = folder_name .. "/" .. profile_name .. ".json"
-
-        -- Use pcall to handle any potential errors in writing
-        local success, err = pcall(function()
-            writefile(path, game:GetService("HttpService"):JSONEncode(save_data))
-        end)
-
-        if not success then
-            warn("Failed to save file at " .. path .. ": " .. tostring(err))
-        end
-
+        local save_data = {}
+        save_data[profile_name] = macro_table
+        writefile(folder_name .. "\\" .. profile_name .. ".json",
+                  game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
 
-local function Save()
-    local settings_path = folder_name .. "/Settings.json"
-
-    -- Use pcall to handle errors in saving JSON settings
-    local success, err = pcall(function()
-        writefile(settings_path, game:GetService("HttpService"):JSONEncode(JSON))
-    end)
-
-    if not success then
-        warn("Failed to save settings: " .. tostring(err))
-    end
-
+function Save()
+    writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(JSON))
     SaveMacros()
 end
 
@@ -398,4 +382,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-
