@@ -140,15 +140,14 @@ setreadonly(game_metatable, false)
 game_metatable.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local Args = {...}
-    local money 
-   
-  
+    local money
+
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
             if game.Players.LocalPlayer.leaderstats.Cash then
                 money = GetMoney()
             end
-           
+
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
@@ -186,9 +185,9 @@ end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
-    Name = "Rayfield Example Window",
-    LoadingTitle = "Rayfield Interface Suite",
-    LoadingSubtitle = "by Sirius",
+    Name = "Sapphire Hub",
+    LoadingTitle = "Anime World Tower Defense",
+    LoadingSubtitle = "by Saintfulls",
     ConfigurationSaving = {
         Enabled = false,
         FolderName = "SapphireHub/Anime World Tower Defense/Settings/",
@@ -220,7 +219,6 @@ local Tabs = {
 }
 
 local Macro_Main = Tabs.Macro:CreateSection("Main")
-local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
 
 local profile_list = {}
 for i, _ in pairs(Macros) do
@@ -236,7 +234,7 @@ if Macros[JSON.macro_profile] == nil then
     end
 end
 
-local Macro_list = Macro_Main:CreateDropdown({
+local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
     CurrentOption = {JSON.macro_profile},
@@ -268,7 +266,7 @@ local Macro_list = Macro_Main:CreateDropdown({
     end
 })
 
-local Macro_Record = Macro_Main:CreateToggle({
+local Macro_Record = Tabs.Macro:CreateToggle({
     Name = "Record Macro",
     CurrentValue = JSON.macro_record,
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
@@ -295,7 +293,7 @@ local Macro_Record = Macro_Main:CreateToggle({
         else
             Rayfield:Notify({
                 Title = "Macro",
-                Content = "Recording Macro :" ..  JSON.macro_profile,
+                Content = "Recording Macro :" .. JSON.macro_profile,
                 Duration = 6.5,
                 Image = 4483362458,
                 Actions = { -- Notification Buttons
@@ -313,7 +311,7 @@ local Macro_Record = Macro_Main:CreateToggle({
     end
 })
 
-local Macro_Playback = Macro_Main:CreateToggle({
+local Macro_Playback = Tabs.Macro:CreateToggle({
     Name = "Play Macro",
     CurrentValue = JSON.macro_playback,
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
@@ -326,10 +324,10 @@ local Macro_Playback = Macro_Main:CreateToggle({
         end
     end
 })
-
+local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
 local profile_name = ""
 
-local profile_name_text = Macro_Settings:CreateInput({
+local profile_name_text = Tabs.Macro:CreateInput({
     Name = "Profile Name",
     PlaceholderText = "Enter Name",
     RemoveTextAfterFocusLost = false,
@@ -340,7 +338,7 @@ local profile_name_text = Macro_Settings:CreateInput({
     end
 })
 
-local Button = Macro_Settings:CreateButton({
+local Button = Tabs.Macro:CreateButton({
     Name = "Create Profile",
     Callback = function()
         if Macros[profile_name] ~= nil then
