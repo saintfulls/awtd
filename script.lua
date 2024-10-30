@@ -140,10 +140,15 @@ setreadonly(game_metatable, false)
 game_metatable.__namecall = newcclosure(function(self, ...)
     local method = getnamecallmethod()
     local Args = {...}
-
-    local money = GetMoney()
+    local money 
+   
+  
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
+            if game.Players.LocalPlayer.leaderstats.Cash then
+                money = GetMoney()
+            end
+           
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
