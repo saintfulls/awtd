@@ -135,13 +135,37 @@ function timeElapsed()
     end
 end
 function CFrameToTable(cframe)
-    local components = {cframe:GetComponents()}
-    return components
+    local x, y, z = cframe.X, cframe.Y, cframe.Z
+    local lookVector = cframe.LookVector
+    local rightVector = cframe.RightVector
+    
+    -- Calculate pitch, yaw, roll
+    local pitch = math.asin(-lookVector.Y)
+    local yaw = math.atan2(lookVector.X, lookVector.Z)
+    local roll = math.atan2(-rightVector.Y, rightVector.X)
+    
+    return {
+        Position = {x, y, z},
+        Angles = {pitch, yaw, roll}
+    }
 end
 
-function TableToCFrame(tbl)
-    return CFrame.new(unpack(tbl))
+function TableToCFrame(cframeTable)
+    -- Extract position and angles from the table
+    local position = cframeTable.Position
+    local angles = cframeTable.Angles
+    
+    -- Create a CFrame from the position
+    local cframe = CFrame.new(position[1], position[2], position[3])
+    
+    -- Apply the rotations using CFrame.Angles
+    cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
+    
+    return cframe
 end
+
+
+
 local game_metatable = getrawmetatable(game)
 local namecall_original = game_metatable.__namecall
 
