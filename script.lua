@@ -1,4 +1,3 @@
-
 for _, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
     v:Disable()
 end
@@ -85,7 +84,7 @@ end
 local function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         -- Check if profile_name is a string
-        if type(profile_name) == "string" then
+        if type(profile_name) == "table" then
             local save_data = {
                 [profile_name] = macro_table
             }
@@ -100,7 +99,7 @@ local function SaveMacros()
                 warn("Failed to save file at " .. path .. ": " .. tostring(err))
             end
         else
-            warn("Profile name is not a string: " .. tostring(profile_name))
+            warn("Profile name is not a table: " .. tostring(profile_name))
         end
     end
 end
