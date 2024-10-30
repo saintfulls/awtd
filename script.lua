@@ -29,33 +29,7 @@ local DefaultSettings = {
     auto_join_level = 1
 }
 
-local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
-local Window = Rayfield:CreateWindow({
-    Name = "Rayfield Example Window",
-    LoadingTitle = "Rayfield Interface Suite",
-    LoadingSubtitle = "by Sirius",
-    ConfigurationSaving = {
-        Enabled = false,
-        FolderName = "SapphireHub/Anime World Tower Defense/Settings/", -- Create a custom folder for your hub/game
-        FileName = game.Players.LocalPlayer.UserId .. ".json"
-    },
-    Discord = {
-        Enabled = false,
-        Invite = "noinvitelink",
-        RememberJoins = true
-    },
-    KeySystem = false,
-    KeySettings = {
-        Title = "Untitled",
-        Subtitle = "Key System",
-        Note = "No method of obtaining the key is provided",
-        FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
-        SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
-        GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
-        Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
-     }
-})
 
 if not isfolder("SapphireHub") then
     makefolder("SapphireHub")
@@ -345,6 +319,34 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     task.spawn(StartMacroTimer)
 end
 
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
+
+local Window = Rayfield:CreateWindow({
+    Name = "Rayfield Example Window",
+    LoadingTitle = "Rayfield Interface Suite",
+    LoadingSubtitle = "by Sirius",
+    ConfigurationSaving = {
+        Enabled = false,
+        FolderName = "SapphireHub/Anime World Tower Defense/Settings/", -- Create a custom folder for your hub/game
+        FileName = game.Players.LocalPlayer.UserId .. ".json"
+    },
+    Discord = {
+        Enabled = false,
+        Invite = "noinvitelink",
+        RememberJoins = true
+    },
+    KeySystem = false,
+    KeySettings = {
+        Title = "Untitled",
+        Subtitle = "Key System",
+        Note = "No method of obtaining the key is provided",
+        FileName = "Key", -- It is recommended to use something unique as other scripts using Rayfield may overwrite your key file
+        SaveKey = true, -- The user's key will be saved, but if you change the key, they will be unable to use your script
+        GrabKeyFromSite = false, -- If this is true, set Key below to the RAW site you would like Rayfield to get the key from
+        Key = {"Hello"} -- List of keys that will be accepted by the system, can be RAW file links (pastebin, github etc) or simple strings ("hello","key22")
+     }
+})
+
 local Tabs = {
     Game = Window:CreateTab("Game", 4483362458),
     Lobby = Window:CreateTab("Lobby", 4483362458),
@@ -353,8 +355,8 @@ local Tabs = {
     Miscellaneous = Window:CreateTab("Miscellaneous", 4483362458)
 }
 
-local Macro_Main = Macro:CreateSection("Main")
-local Macro_Settings = Macro:CreateSection("Macro Settings")
+local Macro_Main = Tabs.Macro:CreateSection("Main")
+local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
 
 local profile_list = {}
 for i, _ in pairs(Macros) do
