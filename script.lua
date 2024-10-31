@@ -21,8 +21,10 @@ local DefaultSettings = {
     macro_profile = "Default Profile",
     macro_sell = true,
     macro_changepriority = true,
+    macro_upgrade = true,
+    macro_summon = true,
     macro_specialmove = true,
-    macro_skipwave = false,
+    macro_skipwave = true,
     macro_record = false,
     macro_playback = false,
     auto_join_game = false,
@@ -110,7 +112,100 @@ for k, v in pairs(DefaultSettings) do
 end
 
 function MacroPlayback()
+    repeat
+        task.wait()
+    until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
 
+    table.sort(Macros[JSON.macro_profile], function(a, b)
+        return a[1] < b[1]
+    end)
+
+    for _, v in pairs(Macros[JSON.macro_profile]) do
+        local time = v[1]
+        local remote_arguments = v[2]
+        local money = v[3]
+
+        -- money tracking (to be removed)
+        if money ~= nil then
+            repeat
+                task.wait()
+            until GetMoney() >= money
+        end
+
+        repeat
+            task.wait()
+        until timeElapsed() >= time or time < 0
+
+        if not JSON.macro_playback then
+            return
+        end
+
+        local action = remote_arguments
+        local parameters = remote_arguments[2]
+
+        if action[3] == "SpawnUnit" and JSON.macro_summon then
+            local args = {
+                [1] = parameters[1],
+                [2] = TableToCFrame(parameters[2]),
+                [3] = 1,
+                [4] = {
+                    [1] = "1",
+                    [2] = "1",
+                    [3] = "1",
+                    [4] = "1"
+                }
+            }
+
+            game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+        elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
+            local args = {
+                [1] = parameters[1]
+            }
+
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
+
+                    end
+                end
+            end
+        elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+            local args = {
+                [1] = parameters[1]
+            }
+
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
+
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[3] == "SellUnit" and JSON.macro_sell then
+            local args = {
+                [1] = parameters[1]
+            }
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
+
+                    end
+                end
+            end
+        elseif action[1] == "SkipWave" then
+            game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+        end
+
+    end
 end
 
 function StartMacroTimer()
@@ -149,10 +244,14 @@ function CFrameToTable(cframe)
     }
 end
 
-task.spawn(AutomaticChangeSpeed)
-
 function AutomaticChangeSpeed()
 
+end
+
+function JoinGame()
+    while JSON.auto_join_game do
+
+    end
 end
 function TableToCFrame(cframeTable)
     local position = cframeTable.Position
@@ -181,7 +280,7 @@ if game.PlaceId ~= 6558526079 then
 
                 if Args[1] ~= nil then
                     money = GetMoney()
-                    if self.Name == "SpawnUnit" then
+                    if self.Name == "SpawnUnit" and JSON.macro_summon then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
@@ -191,34 +290,35 @@ if game.PlaceId ~= 6558526079 then
                             },
                             [3] = money
                         })
-                    elseif self.Name == "UpgradeUnit" then
+                    elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1],
+                                [1] = Args[1]:GetFullName(),
                                 [2] = CFrameToTable(Args[2]),
                                 [3] = self.Name
                             },
                             [3] = money
                         })
-                    elseif self.Name == "ChangeUnitModeFunction" then
+                    elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1],
-                                [2] = self.Name
+                                [1] = Args[1]:GetFullName(),
+                                [2] = self.Name,
+                                [3] = CFrameToTable(Args[1].HumanoidRootPart.Position)
                             }
                         })
-                    elseif self.Name == "SellUnit" then
+                    elseif self.Name == "SellUnit" and JSON.macro_sell then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1],
-                                [2] = CFrameToTable(Args[2]),
+                                [1] = Args[1]:GetFullName(),
+                                [2] = CFrameToTable(Args[1].HumanoidRootPart.Position),
                                 [3] = self.Name
                             }
                         })
-                    elseif self.Name == "SkipEvent" then
+                    elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
@@ -245,6 +345,9 @@ repeat
 until #Player.Data:GetChildren() > 0
 
 if not game.Workspace:FindFirstChild("PlayerPortal") then
+    if JSON.auto_2x then
+        task.spawn(AutomaticChangeSpeed)
+    end
     task.spawn(StartMacroTimer)
 else
 
@@ -286,7 +389,6 @@ local Tabs = {
 }
 
 local Game_Main = Tabs.Game:CreateSection("Toggles")
-
 
 Tabs.Macro:CreateToggle({
     Name = "Automatic 2x Speed",
@@ -333,10 +435,6 @@ Tabs.Lobby:CreateToggle({
         end
     end
 })
-
-
-
-
 
 local Macro_Main = Tabs.Macro:CreateSection("Main")
 
@@ -444,7 +542,7 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
         end
     end
 })
-local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
+
 local profile_name = ""
 
 local profile_name_text = Tabs.Macro:CreateInput({
@@ -493,3 +591,61 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
+
+local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
+
+Tabs.Macro:CreateToggle({
+    Name = "Play Macro",
+    CurrentValue = JSON.macro_summon,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.macro_summon = Value
+        Save()
+
+    end
+})
+
+Tabs.Macro:CreateToggle({
+    Name = "Play Macro",
+    CurrentValue = JSON.macro_sell,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.macro_sell = Value
+        Save()
+
+    end
+})
+
+Tabs.Macro:CreateToggle({
+    Name = "Play Macro",
+    CurrentValue = JSON.macro_upgrade,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.macro_upgrade = Value
+        Save()
+
+    end
+})
+
+Tabs.Macro:CreateToggle({
+    Name = "Play Macro",
+    CurrentValue = JSON.macro_changepriority,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.macro_changepriority = Value
+        Save()
+
+    end
+})
+
+Tabs.Macro:CreateToggle({
+    Name = "Play Macro",
+    CurrentValue = JSON.macro_skipwave,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.macro_skipwave = Value
+        Save()
+
+    end
+})
+
