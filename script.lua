@@ -138,7 +138,6 @@ function CFrameToTable(cframe)
     local lookVector = cframe.LookVector
     local rightVector = cframe.RightVector
 
-    -- Calculate pitch, yaw, roll
     local pitch = math.asin(-lookVector.Y)
     local yaw = math.atan2(lookVector.X, lookVector.Z)
     local roll = math.atan2(-rightVector.Y, rightVector.X)
@@ -150,14 +149,11 @@ function CFrameToTable(cframe)
 end
 
 function TableToCFrame(cframeTable)
-    -- Extract position and angles from the table
     local position = cframeTable.Position
     local angles = cframeTable.Angles
 
-    -- Create a CFrame from the position
     local cframe = CFrame.new(position[1], position[2], position[3])
 
-    -- Apply the rotations using CFrame.Angles
     cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
 
     return cframe
@@ -173,7 +169,7 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local Args = {...}
     local money
 
-    repeat task.wait() until game.Players.LocalPlayer.leaderstats:FindFirstChild("Money") ~=
+    repeat task.wait() until game.Players.LocalPlayer.leaderstats:FindFirstChild("Cash") ~=
     nil
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
@@ -426,4 +422,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-
