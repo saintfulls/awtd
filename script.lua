@@ -169,9 +169,8 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local Args = {...}
     local money
 
-    repeat task.wait() until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
     if Args and (method == "FireServer" or method == "InvokeServer") then
-        if JSON.macro_record and not JSON.macro_playback then
+        if JSON.macro_record and not JSON.macro_playback and game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil then
             
            money = GetMoney()
 
@@ -237,7 +236,7 @@ until #Player.Data:GetChildren() > 0
 if not game.Workspace:FindFirstChild("PlayerPortal") then
     task.spawn(StartMacroTimer)
 else
-
+   
 end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
