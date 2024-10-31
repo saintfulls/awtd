@@ -26,7 +26,8 @@ local DefaultSettings = {
     macro_record = false,
     macro_playback = false,
     auto_join_game = false,
-    auto_join_level = 1
+    auto_join_level = 1,
+    auto_2x = false
 }
 
 -- Make required folders if they don't exist
@@ -148,6 +149,11 @@ function CFrameToTable(cframe)
     }
 end
 
+task.spawn(AutomaticChangeSpeed)
+
+function AutomaticChangeSpeed()
+
+end
 function TableToCFrame(cframeTable)
     local position = cframeTable.Position
     local angles = cframeTable.Angles
@@ -172,17 +178,16 @@ if game.PlaceId ~= 6558526079 then
 
         if Args and (method == "FireServer" or method == "InvokeServer") then
             if JSON.macro_record and not JSON.macro_playback then
-                local player = game.Players.LocalPlayer
-                local leaderstats = player:FindFirstChild("leaderstats")
 
-                if Args[1] ~= nil and leaderstats and leaderstats:FindFirstChild("Cash") then
+                if Args[1] ~= nil then
                     money = GetMoney()
                     if self.Name == "SpawnUnit" then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
                                 [1] = Args[1],
-                                [2] = CFrameToTable(Args[2])
+                                [2] = CFrameToTable(Args[2]),
+                                [3] = self.Name
                             },
                             [3] = money
                         })
@@ -191,27 +196,34 @@ if game.PlaceId ~= 6558526079 then
                             [1] = timeElapsed(),
                             [2] = {
                                 [1] = Args[1],
-                                [2] = CFrameToTable(Args[2])
+                                [2] = CFrameToTable(Args[2]),
+                                [3] = self.Name
                             },
                             [3] = money
                         })
                     elseif self.Name == "ChangeUnitModeFunction" then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {}
+                            [2] = {
+                                [1] = Args[1],
+                                [2] = self.Name
+                            }
                         })
                     elseif self.Name == "SellUnit" then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
                                 [1] = Args[1],
-                                [2] = CFrameToTable(Args[2])
+                                [2] = CFrameToTable(Args[2]),
+                                [3] = self.Name
                             }
                         })
                     elseif self.Name == "SkipEvent" then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {}
+                            [2] = {
+                                [1] = self.Name
+                            }
                         })
                     end
 
@@ -272,6 +284,59 @@ local Tabs = {
     Webhook = Window:CreateTab("Webhook", 4483362458),
     Miscellaneous = Window:CreateTab("Miscellaneous", 4483362458)
 }
+
+local Game_Main = Tabs.Game:CreateSection("Toggles")
+
+
+Tabs.Macro:CreateToggle({
+    Name = "Automatic 2x Speed",
+    CurrentValue = JSON.auto_2x,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.auto_2x = value
+        Save()
+
+        if value and not game.Workspace:FindFirstChild("PlayerPortal") then
+            task.spawn(AutomaticChangeSpeed)
+        end
+    end
+})
+
+local Lobby_Main = Tabs.Lobby:CreateSection("Toggles")
+
+Tabs.Lobby:CreateToggle({
+    Name = "Auto Join Story",
+    CurrentValue = JSON.auto_join_game,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.auto_2x = value
+        Save()
+
+        if value then
+            task.spawn(AutomaticChangeSpeed)
+        end
+    end
+})
+
+local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
+
+Tabs.Lobby:CreateToggle({
+    Name = "Auto Next Story Level",
+    CurrentValue = JSON.auto,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.auto_2x = value
+        Save()
+
+        if value and not game.Workspace:FindFirstChild("Queue") then
+            task.spawn(AutomaticChangeSpeed)
+        end
+    end
+})
+
+
+
+
 
 local Macro_Main = Tabs.Macro:CreateSection("Main")
 
@@ -428,4 +493,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-
