@@ -175,7 +175,9 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-
+            while not player:FindFirstChild("leaderstats") do
+                wait() -- Wait for the leaderstats to be created
+            end
             money = GetMoney()
 
             if self.Name == "SpawnUnit" then
@@ -185,16 +187,35 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [1] = Args[1],
                         [2] = CFrameToTable(Args[2])
                     },
-                    [3] = money
+                    [3] = money,
+                    [4] = self.Name
                 })
             elseif self.Name == "UpgradeUnit" then
-                -- Logic for UpgradeUnit
+                table.insert(Macros[JSON.macro_profile], {
+                    [1] = timeElapsed(),
+                    [2] = {
+                        [1] = Args[1],
+                        [2] = CFrameToTable(Args[2])
+                    },
+                    [3] = money,
+                    [4] = self.Name
+                })
             elseif self.Name == "ChangeUnitModeFunction" then
                 -- Logic for ChangeUnitModeFunction
             elseif self.Name == "SellUnit" then
-                -- Logic for SellUnit
+                table.insert(Macros[JSON.macro_profile], {
+                    [1] = timeElapsed(),
+                    [2] = {
+                        [1] = Args[1],
+                        [2] = CFrameToTable(Args[2])
+                    },
+                    [3] = self.Name
+                })
             elseif self.Name == "SkipEvent" then
-                -- Logic for SkipEvent
+                table.insert(Macros[JSON.macro_profile], {
+                    [1] = timeElapsed(),
+                    [2] = self.Name
+                })
             end
             task.spawn(function()
                 Save()
