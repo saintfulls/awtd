@@ -178,9 +178,11 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            if player.leaderstats and player.leaderstats:FindFirstChild("Cash") then
-                money = GetMoney() 
+            while not player:FindFirstChild("leaderstats").Cash do
+                wait()
             end
+                money = GetMoney() 
+            
 
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
