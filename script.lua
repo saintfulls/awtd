@@ -1,4 +1,3 @@
-
 for _, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
     v:Disable()
 end
@@ -174,11 +173,11 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local Args = {...}
     local money
 
+    repeat task.wait() until game.Players.LocalPlayer.leaderstats:FindFirstChild("Money") ~=
+    nil
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            while not game.Players.LocalPlayer:FindFirstChild("leaderstats") do
-                wait() -- Wait for the leaderstats to be created
-            end
+          
             money = GetMoney()
 
             if self.Name == "SpawnUnit" then
