@@ -409,4 +409,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-
