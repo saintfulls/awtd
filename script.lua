@@ -169,11 +169,11 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local Args = {...}
     local money
 
-    repeat task.wait() until game.Players.LocalPlayer.leaderstats:FindFirstChild("Cash") ~=
-    nil
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-          
+            repeat
+                task.wait()
+            until game.Players.LocalPlayer.leaderstats:FindFirstChild("Cash") ~= nil
             money = GetMoney()
 
             if self.Name == "SpawnUnit" then
