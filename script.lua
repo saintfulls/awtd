@@ -170,14 +170,9 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local money
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
-        local player = game.Players.LocalPlayer
-        local leaderstats = player:FindFirstChild("leaderstats")
-        
-        -- Check if leaderstats and Cash exist
-        if JSON.macro_record and not JSON.macro_playback and leaderstats and leaderstats:FindFirstChild("Cash") then
+        if JSON.macro_record and not JSON.macro_playback then
             money = GetMoney()
 
-            -- Perform actions based on self.Name
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
