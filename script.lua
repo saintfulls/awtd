@@ -170,10 +170,14 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local money
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
-        if JSON.macro_record and not JSON.macro_playback and game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil then
-            
-           money = GetMoney()
+        local player = game.Players.LocalPlayer
+        local leaderstats = player:FindFirstChild("leaderstats")
+        
+        -- Check if leaderstats and Cash exist
+        if JSON.macro_record and not JSON.macro_playback and leaderstats and leaderstats:FindFirstChild("Cash") then
+            money = GetMoney()
 
+            -- Perform actions based on self.Name
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
@@ -183,7 +187,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [3] = self.Name
                     },
                     [3] = money,
-                   
                 })
             elseif self.Name == "UpgradeUnit" then
                 table.insert(Macros[JSON.macro_profile], {
@@ -196,10 +199,10 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                     [3] = money,
                 })
             elseif self.Name == "ChangeUnitModeFunction" then
-                table.insert(Macros[json.macro_profile],{
+                table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
-                        
+                        [3] = self.Name
                     }
                 })
             elseif self.Name == "SellUnit" then
@@ -210,7 +213,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [2] = CFrameToTable(Args[2]),
                         [3] = self.Name
                     },
-                  
                 })
             elseif self.Name == "SkipEvent" then
                 table.insert(Macros[JSON.macro_profile], {
@@ -220,6 +222,8 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                     }
                 })
             end
+
+            -- Save after recording
             task.spawn(function()
                 Save()
             end)
@@ -227,6 +231,7 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     end
     return namecall_original(self, ...)
 end)
+
 
 local Player = game:GetService("Players").LocalPlayer
 repeat
@@ -429,4 +434,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-	 
