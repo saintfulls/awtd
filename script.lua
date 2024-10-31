@@ -184,7 +184,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [2] = CFrameToTable(Args[2])
                     },
                     [3] = money,
-                    [4] = self.Name
                 })
             elseif self.Name == "UpgradeUnit" then
                 table.insert(Macros[JSON.macro_profile], {
@@ -194,7 +193,7 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [2] = CFrameToTable(Args[2])
                     },
                     [3] = money,
-                    [4] = self.Name
+            
                 })
             elseif self.Name == "ChangeUnitModeFunction" then
                 -- Logic for ChangeUnitModeFunction
@@ -205,12 +204,11 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                         [1] = Args[1],
                         [2] = CFrameToTable(Args[2])
                     },
-                    [3] = self.Name
+                   
                 })
             elseif self.Name == "SkipEvent" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
-                    [2] = self.Name
                 })
             end
             task.spawn(function()
