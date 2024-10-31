@@ -184,7 +184,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                     [2] = {
                         [1] = Args[1],
                         [2] = CFrameToTable(Args[2]),
-                        [3] = self.Name
                     },
                     [3] = money,
                 })
@@ -194,7 +193,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                     [2] = {
                         [1] = Args[1],
                         [2] = CFrameToTable(Args[2]),
-                        [3] = self.Name
                     },
                     [3] = money,
                 })
@@ -202,7 +200,7 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
-                        [3] = self.Name
+                       
                     }
                 })
             elseif self.Name == "SellUnit" then
@@ -211,14 +209,13 @@ game_metatable.__namecall = newcclosure(function(self, ...)
                     [2] = {
                         [1] = Args[1],
                         [2] = CFrameToTable(Args[2]),
-                        [3] = self.Name
                     },
                 })
             elseif self.Name == "SkipEvent" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
-                        [1] = self.Name
+                      
                     }
                 })
             end
