@@ -178,7 +178,7 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            while not player:FindFirstChild("leaderstats").Cash do
+            while not game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash do
                 wait()
             end
                 money = GetMoney() 
