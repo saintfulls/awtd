@@ -61,13 +61,12 @@ end
 
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
-              game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
+        game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 end
 
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
-        local json_content = game:GetService("HttpService"):JSONDecode(readfile(
-                                                                           file))
+        local json_content = game:GetService("HttpService"):JSONDecode(readfile(file))
 
         for k, v in pairs(json_content) do
             if Macros[k] ~= nil then
@@ -76,14 +75,15 @@ for _, file in pairs(listfiles(folder_name)) do
                 Macros[k] = v
             end
         end
-    end) then print("Error reading file: " .. file) end
+    end) then
+        print("Error reading file: " .. file)
+    end
 end
 
 if not pcall(function()
     JSON = game:GetService("HttpService"):JSONDecode(readfile(SettingsFile))
 end) then
-    writefile(SettingsFile,
-              game:GetService("HttpService"):JSONEncode(DefaultSettings))
+    writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(DefaultSettings))
     JSON = DefaultSettings
 end
 
@@ -91,8 +91,7 @@ function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
         save_data[profile_name] = macro_table
-        writefile(folder_name .. "/" .. profile_name .. ".json",
-                  game:GetService("HttpService"):JSONEncode(save_data))
+        writefile(folder_name .. "/" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
 
@@ -138,12 +137,12 @@ function CFrameToTable(cframe)
     local x, y, z = cframe.X, cframe.Y, cframe.Z
     local lookVector = cframe.LookVector
     local rightVector = cframe.RightVector
-    
+
     -- Calculate pitch, yaw, roll
     local pitch = math.asin(-lookVector.Y)
     local yaw = math.atan2(lookVector.X, lookVector.Z)
     local roll = math.atan2(-rightVector.Y, rightVector.X)
-    
+
     return {
         Position = {x, y, z},
         Angles = {pitch, yaw, roll}
@@ -154,17 +153,15 @@ function TableToCFrame(cframeTable)
     -- Extract position and angles from the table
     local position = cframeTable.Position
     local angles = cframeTable.Angles
-    
+
     -- Create a CFrame from the position
     local cframe = CFrame.new(position[1], position[2], position[3])
-    
+
     -- Apply the rotations using CFrame.Angles
     cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
-    
+
     return cframe
 end
-
-
 
 local game_metatable = getrawmetatable(game)
 local namecall_original = game_metatable.__namecall
@@ -178,11 +175,8 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            while not game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash do
-                wait()
-            end
-                money = GetMoney() 
-            
+
+            money = GetMoney()
 
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
@@ -217,6 +211,8 @@ until #Player.Data:GetChildren() > 0
 
 if not game.Workspace:FindFirstChild("PlayerPortal") then
     task.spawn(StartMacroTimer)
+else
+
 end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
@@ -369,7 +365,7 @@ local profile_name_text = Tabs.Macro:CreateInput({
     RemoveTextAfterFocusLost = false,
     Callback = function(Text)
         if Text ~= "" then
-            Text = profile_name
+            profile_name = Text
         end
     end
 })
@@ -402,7 +398,7 @@ local Button = Tabs.Macro:CreateButton({
             JSON.macro_profile = profile_name
             Save()
             -- inserts profile into list of profiles.
-            table.insert(profile_list, JSON.macro_profile)
+            table.insert(profile_list, profile_name)
 
             Macro_list:Refresh(profile_list)
             Macro_list:Set(profile_name)
