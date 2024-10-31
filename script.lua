@@ -91,7 +91,7 @@ function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
         save_data[profile_name] = macro_table
-        writefile(folder_name .. "\\" .. profile_name .. ".json",
+        writefile(folder_name .. "/" .. profile_name .. ".json",
                   game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
@@ -178,8 +178,8 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            if game.Players.LocalPlayer.leaderstats.Cash then
-                money = GetMoney()
+            if player.leaderstats and player.leaderstats:FindFirstChild("Cash") then
+                money = GetMoney() 
             end
 
             if self.Name == "SpawnUnit" then
@@ -402,7 +402,8 @@ local Button = Tabs.Macro:CreateButton({
             -- inserts profile into list of profiles.
             table.insert(profile_list, JSON.macro_profile)
 
-            Macro_list:Set(profile_list)
+            Macro_list:Refresh(profile_list)
+            Macro_list:Set(profile_name)
         end
     end
 })
