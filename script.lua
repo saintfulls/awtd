@@ -171,50 +171,49 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            money = GetMoney()
+            local player = game.Players.LocalPlayer
+            local leaderstats = player:FindFirstChild("leaderstats")
 
-            if self.Name == "SpawnUnit" then
-                table.insert(Macros[JSON.macro_profile], {
-                    [1] = timeElapsed(),
-                    [2] = {
-                        [1] = Args[1],
-                        [2] = CFrameToTable(Args[2]),
-                    },
-                    [3] = money,
-                })
-            elseif self.Name == "UpgradeUnit" then
-                table.insert(Macros[JSON.macro_profile], {
-                    [1] = timeElapsed(),
-                    [2] = {
-                        [1] = Args[1],
-                        [2] = CFrameToTable(Args[2]),
-                    },
-                    [3] = money,
-                })
-            elseif self.Name == "ChangeUnitModeFunction" then
-                table.insert(Macros[JSON.macro_profile], {
-                    [1] = timeElapsed(),
-                    [2] = {
-                       
-                    }
-                })
-            elseif self.Name == "SellUnit" then
-                table.insert(Macros[JSON.macro_profile], {
-                    [1] = timeElapsed(),
-                    [2] = {
-                        [1] = Args[1],
-                        [2] = CFrameToTable(Args[2]),
-                    },
-                })
-            elseif self.Name == "SkipEvent" then
-                table.insert(Macros[JSON.macro_profile], {
-                    [1] = timeElapsed(),
-                    [2] = {
-                      
-                    }
-                })
+            if Args[1] ~= nil and leaderstats and leaderstats:FindFirstChild("Cash") then
+                money = GetMoney()
+                if self.Name == "SpawnUnit" then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1],
+                            [2] = CFrameToTable(Args[2])
+                        },
+                        [3] = money
+                    })
+                elseif self.Name == "UpgradeUnit" then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1],
+                            [2] = CFrameToTable(Args[2])
+                        },
+                        [3] = money
+                    })
+                elseif self.Name == "ChangeUnitModeFunction" then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {}
+                    })
+                elseif self.Name == "SellUnit" then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1],
+                            [2] = CFrameToTable(Args[2])
+                        }
+                    })
+                elseif self.Name == "SkipEvent" then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {}
+                    })
+                end
             end
-
             -- Save after recording
             task.spawn(function()
                 Save()
@@ -224,7 +223,6 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     return namecall_original(self, ...)
 end)
 
-
 local Player = game:GetService("Players").LocalPlayer
 repeat
     task.wait()
@@ -233,7 +231,7 @@ until #Player.Data:GetChildren() > 0
 if not game.Workspace:FindFirstChild("PlayerPortal") then
     task.spawn(StartMacroTimer)
 else
-   
+
 end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
