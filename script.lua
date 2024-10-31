@@ -175,9 +175,13 @@ game_metatable.__namecall = newcclosure(function(self, ...)
 
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            while not player:FindFirstChild("leaderstats") do
+            local leaderstats = player:FindFirstChild("leaderstats")
+            while not leaderstats do
                 wait() -- Wait for the leaderstats to be created
+                leaderstats = player:FindFirstChild("leaderstats") -- Check again
             end
+
+            -- Now you can safely get the money
             money = GetMoney()
 
             if self.Name == "SpawnUnit" then
