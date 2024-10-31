@@ -169,46 +169,56 @@ game_metatable.__namecall = newcclosure(function(self, ...)
     local Args = {...}
     local money
 
+    repeat task.wait() until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
     if Args and (method == "FireServer" or method == "InvokeServer") then
         if JSON.macro_record and not JSON.macro_playback then
-            if game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash then
-                money = GetMoney()
-            end
-           
+            
+           money = GetMoney()
 
             if self.Name == "SpawnUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
                         [1] = Args[1],
-                        [2] = CFrameToTable(Args[2])
+                        [2] = CFrameToTable(Args[2]),
+                        [3] = self.Name
                     },
                     [3] = money,
+                   
                 })
             elseif self.Name == "UpgradeUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
                         [1] = Args[1],
-                        [2] = CFrameToTable(Args[2])
+                        [2] = CFrameToTable(Args[2]),
+                        [3] = self.Name
                     },
                     [3] = money,
-            
                 })
             elseif self.Name == "ChangeUnitModeFunction" then
-                -- Logic for ChangeUnitModeFunction
+                table.insert(Macros[json.macro_profile],{
+                    [1] = timeElapsed(),
+                    [2] = {
+                        
+                    }
+                })
             elseif self.Name == "SellUnit" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
                     [2] = {
                         [1] = Args[1],
-                        [2] = CFrameToTable(Args[2])
+                        [2] = CFrameToTable(Args[2]),
+                        [3] = self.Name
                     },
-                   
+                  
                 })
             elseif self.Name == "SkipEvent" then
                 table.insert(Macros[JSON.macro_profile], {
                     [1] = timeElapsed(),
+                    [2] = {
+                        [1] = self.Name
+                    }
                 })
             end
             task.spawn(function()
@@ -420,4 +430,3 @@ local Button = Tabs.Macro:CreateButton({
         end
     end
 })
-
