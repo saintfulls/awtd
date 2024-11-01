@@ -194,10 +194,11 @@ end
 
 function CFrameToTable(cframe)
     return {
-        Position = {cframe:Component(1), cframe:Component(2), cframe:Component(3)},  -- Get X, Y, Z position
-        Angles = {cframe:Component(4), cframe:Component(5), cframe:Component(6)}  -- Get angles (pitch, yaw, roll)
+        Position = {cframe.X, cframe.Y, cframe.Z}, 
+        Angles = {cframe:ToEulerAnglesXYZ()} 
     }
 end
+
 
 function TableToCFrame(cframeTable)
     return CFrame.new(cframeTable.Position[1], cframeTable.Position[2], cframeTable.Position[3]) *
@@ -619,5 +620,4 @@ Tabs.Macro:CreateToggle({
 
     end
 })
-
 
