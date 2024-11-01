@@ -141,7 +141,7 @@ function MacroPlayback()
             return
         end
 
-        local action = remote_arguments
+        local action = remote_arguments[2]
         local parameters = remote_arguments[2]
 
         if action[3] == "SpawnUnit" and JSON.macro_summon then
@@ -619,5 +619,4 @@ Tabs.Macro:CreateToggle({
 
     end
 })
-
 
