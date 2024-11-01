@@ -116,6 +116,7 @@ function MacroPlayback()
         task.wait()
     until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
 
+    -- Sort macros by the first element (time)
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -125,7 +126,7 @@ function MacroPlayback()
         local remote_arguments = v[2]
         local money = v[3]
 
-        -- money tracking (to be removed)
+        -- Money tracking (to be removed)
         if money ~= nil then
             repeat
                 task.wait()
@@ -145,42 +146,29 @@ function MacroPlayback()
 
         if action[3] == "SpawnUnit" and JSON.macro_summon then
             local args = {
-                [1] = parameters[1],
-                [2] = TableToCFrame(parameters[2]),
-                [3] = 1,
-                [4] = {
-                    [1] = "1",
-                    [2] = "1",
-                    [3] = "1",
-                    [4] = "1"
-                }
+                parameters[1], 
+                TableToCFrame(parameters[2]), 
+                1, 
+                {"1", "1", "1", "1"}
             }
-
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+
         elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
-            local args = {
-                [1] = parameters[1]
-            }
-
+            local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
-                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
-
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
-
                     end
                 end
             end
+
         elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
-            local args = {
-                [1] = parameters[1]
-            }
-
+            local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
-                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
-
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
                     end
@@ -188,25 +176,106 @@ function MacroPlayback()
             end
 
         elseif action[3] == "SellUnit" and JSON.macro_sell then
-            local args = {
-                [1] = parameters[1]
-            }
+            local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
-                if unit== parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
-
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
-
                     end
                 end
             end
+
         elseif action[1] == "SkipWave" then
             game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
         end
-
     end
 end
+
+function CFrameToTable(cframe)
+    return {
+        Position = {cframe:Component(1), cframe:Component(2), cframe:Component(3)},  -- Get X, Y, Z position
+        Angles = {cframe:Component(4), cframe:Component(5), cframe:Component(6)}  -- Get angles (pitch, yaw, roll)
+    }
+end
+
+function TableToCFrame(cframeTable)
+    return CFrame.new(cframeTable.Position[1], cframeTable.Position[2], cframeTable.Position[3]) *
+           CFrame.Angles(cframeTable.Angles[1], cframeTable.Angles[2], cframeTable.Angles[3])
+end
+
+if game.PlaceId ~= 6558526079 then
+    local game_metatable = getrawmetatable(game)
+    local namecall_original = game_metatable.__namecall
+
+    setreadonly(game_metatable, false)
+
+    game_metatable.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local Args = {...}
+        local money
+
+        if Args and (method == "FireServer" or method == "InvokeServer") then
+            if JSON.macro_record and not JSON.macro_playback then
+                if Args[1] ~= nil then
+                    money = GetMoney()
+                    if self.Name == "SpawnUnit" and JSON.macro_summon then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1],
+                                CFrameToTable(Args[2]),  -- Convert CFrame to table
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[2]),  -- Convert CFrame to table
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                self.Name,
+                                CFrameToTable(Args[1].HumanoidRootPart.Position)  -- Convert CFrame to table
+                            }
+                        })
+                    elseif self.Name == "SellUnit" and JSON.macro_sell then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[1].HumanoidRootPart.Position),  -- Convert CFrame to table
+                                self.Name
+                            }
+                        })
+                    elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {self.Name}
+                        })
+                    end
+
+                    -- Save after recording if conditions are met
+                    task.spawn(function()
+                        Save()
+                    end)
+                end
+            end
+        end
+
+        return namecall_original(self, ...)
+    end)
+end
+
 
 function StartMacroTimer()
     repeat
@@ -229,8 +298,89 @@ function timeElapsed()
         return (os.time() - startTime) + (startTimeOffset - startTime)
     end
 end
+function MacroPlayback()
+    repeat
+        task.wait()
+    until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
+
+    -- Sort macros by the first element (time)
+    table.sort(Macros[JSON.macro_profile], function(a, b)
+        return a[1] < b[1]
+    end)
+
+    for _, v in pairs(Macros[JSON.macro_profile]) do
+        local time = v[1]
+        local remote_arguments = v[2]
+        local money = v[3]
+
+        -- Money tracking (to be removed)
+        if money ~= nil then
+            repeat
+                task.wait()
+            until GetMoney() >= money
+        end
+
+        repeat
+            task.wait()
+        until timeElapsed() >= time or time < 0
+
+        if not JSON.macro_playback then
+            return
+        end
+
+        local action = remote_arguments
+        local parameters = remote_arguments[2]
+
+        if action[3] == "SpawnUnit" and JSON.macro_summon then
+            local args = {
+                parameters[1], 
+                TableToCFrame(parameters[2]), 
+                1, 
+                {"1", "1", "1", "1"}
+            }
+            game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+
+        elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[3] == "SellUnit" and JSON.macro_sell then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[1] == "SkipWave" then
+            game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+        end
+    end
+end
+
 function CFrameToTable(cframe)
-    local x, y, z = cframe.X, cframe.Y, cframe.Z
+    local position = cframe.Position
     local lookVector = cframe.LookVector
     local rightVector = cframe.RightVector
 
@@ -239,26 +389,16 @@ function CFrameToTable(cframe)
     local roll = math.atan2(-rightVector.Y, rightVector.X)
 
     return {
-        Position = {x, y, z},
+        Position = {position.X, position.Y, position.Z},
         Angles = {pitch, yaw, roll}
     }
 end
 
-function AutomaticChangeSpeed()
-
-end
-
-function JoinGame()
-    while JSON.auto_join_game do
-
-    end
-end
 function TableToCFrame(cframeTable)
     local position = cframeTable.Position
     local angles = cframeTable.Angles
 
     local cframe = CFrame.new(position[1], position[2], position[3])
-
     cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
 
     return cframe
@@ -277,16 +417,15 @@ if game.PlaceId ~= 6558526079 then
 
         if Args and (method == "FireServer" or method == "InvokeServer") then
             if JSON.macro_record and not JSON.macro_playback then
-
                 if Args[1] ~= nil then
                     money = GetMoney()
                     if self.Name == "SpawnUnit" and JSON.macro_summon then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1],
-                                [2] = CFrameToTable(Args[2]),
-                                [3] = self.Name
+                                Args[1],
+                                CFrameToTable(Args[2]),
+                                self.Name
                             },
                             [3] = money
                         })
@@ -294,9 +433,9 @@ if game.PlaceId ~= 6558526079 then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = CFrameToTable(Args[2]),
-                                [3] = self.Name
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[2]),
+                                self.Name
                             },
                             [3] = money
                         })
@@ -304,26 +443,24 @@ if game.PlaceId ~= 6558526079 then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = self.Name,
-                                [3] = CFrameToTable(Args[1].HumanoidRootPart.Position)
+                                Args[1]:GetFullName(),
+                                self.Name,
+                                CFrameToTable(Args[1].HumanoidRootPart.Position)
                             }
                         })
                     elseif self.Name == "SellUnit" and JSON.macro_sell then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
                             [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = CFrameToTable(Args[1].HumanoidRootPart.Position),
-                                [3] = self.Name
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[1].HumanoidRootPart.Position),
+                                self.Name
                             }
                         })
                     elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {
-                                [1] = self.Name
-                            }
+                            [2] = {self.Name}
                         })
                     end
 
@@ -338,6 +475,374 @@ if game.PlaceId ~= 6558526079 then
         return namecall_original(self, ...)
     end)
 end
+
+
+function AutomaticChangeSpeed()
+
+end
+
+function JoinGame()
+    while JSON.auto_join_game do
+
+    end
+end
+function MacroPlayback()
+    repeat
+        task.wait()
+    until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
+
+    -- Sort macros by the first element (time)
+    table.sort(Macros[JSON.macro_profile], function(a, b)
+        return a[1] < b[1]
+    end)
+
+    for _, v in pairs(Macros[JSON.macro_profile]) do
+        local time = v[1]
+        local remote_arguments = v[2]
+        local money = v[3]
+
+        -- Money tracking (to be removed)
+        if money ~= nil then
+            repeat
+                task.wait()
+            until GetMoney() >= money
+        end
+
+        repeat
+            task.wait()
+        until timeElapsed() >= time or time < 0
+
+        if not JSON.macro_playback then
+            return
+        end
+
+        local action = remote_arguments
+        local parameters = remote_arguments[2]
+
+        if action[3] == "SpawnUnit" and JSON.macro_summon then
+            local args = {
+                parameters[1], 
+                TableToCFrame(parameters[2]), 
+                1, 
+                {"1", "1", "1", "1"}
+            }
+            game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+
+        elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[3] == "SellUnit" and JSON.macro_sell then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[1] == "SkipWave" then
+            game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+        end
+    end
+end
+
+function CFrameToTable(cframe)
+    local position = cframe.Position
+    local lookVector = cframe.LookVector
+    local rightVector = cframe.RightVector
+
+    local pitch = math.asin(-lookVector.Y)
+    local yaw = math.atan2(lookVector.X, lookVector.Z)
+    local roll = math.atan2(-rightVector.Y, rightVector.X)
+
+    return {
+        Position = {position.X, position.Y, position.Z},
+        Angles = {pitch, yaw, roll}
+    }
+end
+
+function TableToCFrame(cframeTable)
+    local position = cframeTable.Position
+    local angles = cframeTable.Angles
+
+    local cframe = CFrame.new(position[1], position[2], position[3])
+    cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
+
+    return cframe
+end
+
+if game.PlaceId ~= 6558526079 then
+    local game_metatable = getrawmetatable(game)
+    local namecall_original = game_metatable.__namecall
+
+    setreadonly(game_metatable, false)
+
+    game_metatable.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local Args = {...}
+        local money
+
+        if Args and (method == "FireServer" or method == "InvokeServer") then
+            if JSON.macro_record and not JSON.macro_playback then
+                if Args[1] ~= nil then
+                    money = GetMoney()
+                    if self.Name == "SpawnUnit" and JSON.macro_summon then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1],
+                                CFrameToTable(Args[2]),
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[2]),
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                self.Name,
+                                CFrameToTable(Args[1].HumanoidRootPart.Position)
+                            }
+                        })
+                    elseif self.Name == "SellUnit" and JSON.macro_sell then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[1].HumanoidRootPart.Position),
+                                self.Name
+                            }
+                        })
+                    elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {self.Name}
+                        })
+                    end
+
+                    -- Save after recording if conditions are met
+                    task.spawn(function()
+                        Save()
+                    end)
+                end
+            end
+        end
+
+        return namecall_original(self, ...)
+    end)
+end
+
+
+function MacroPlayback()
+    repeat
+        task.wait()
+    until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
+
+    -- Sort macros by the first element (time)
+    table.sort(Macros[JSON.macro_profile], function(a, b)
+        return a[1] < b[1]
+    end)
+
+    for _, v in pairs(Macros[JSON.macro_profile]) do
+        local time = v[1]
+        local remote_arguments = v[2]
+        local money = v[3]
+
+        -- Money tracking (to be removed)
+        if money ~= nil then
+            repeat
+                task.wait()
+            until GetMoney() >= money
+        end
+
+        repeat
+            task.wait()
+        until timeElapsed() >= time or time < 0
+
+        if not JSON.macro_playback then
+            return
+        end
+
+        local action = remote_arguments
+        local parameters = remote_arguments[2]
+
+        if action[3] == "SpawnUnit" and JSON.macro_summon then
+            local args = {
+                parameters[1], 
+                TableToCFrame(parameters[2]), 
+                1, 
+                {"1", "1", "1", "1"}
+            }
+            game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+
+        elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[3] == "SellUnit" and JSON.macro_sell then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Unit:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
+                    end
+                end
+            end
+
+        elseif action[1] == "SkipWave" then
+            game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+        end
+    end
+end
+
+function CFrameToTable(cframe)
+    local position = cframe.Position
+    local lookVector = cframe.LookVector
+    local rightVector = cframe.RightVector
+
+    local pitch = math.asin(-lookVector.Y)
+    local yaw = math.atan2(lookVector.X, lookVector.Z)
+    local roll = math.atan2(-rightVector.Y, rightVector.X)
+
+    return {
+        Position = {position.X, position.Y, position.Z},
+        Angles = {pitch, yaw, roll}
+    }
+end
+
+function TableToCFrame(cframeTable)
+    local position = cframeTable.Position
+    local angles = cframeTable.Angles
+
+    local cframe = CFrame.new(position[1], position[2], position[3])
+    cframe = cframe * CFrame.Angles(angles[1], angles[2], angles[3])
+
+    return cframe
+end
+
+if game.PlaceId ~= 6558526079 then
+    local game_metatable = getrawmetatable(game)
+    local namecall_original = game_metatable.__namecall
+
+    setreadonly(game_metatable, false)
+
+    game_metatable.__namecall = newcclosure(function(self, ...)
+        local method = getnamecallmethod()
+        local Args = {...}
+        local money
+
+        if Args and (method == "FireServer" or method == "InvokeServer") then
+            if JSON.macro_record and not JSON.macro_playback then
+                if Args[1] ~= nil then
+                    money = GetMoney()
+                    if self.Name == "SpawnUnit" and JSON.macro_summon then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1],
+                                CFrameToTable(Args[2]),
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[2]),
+                                self.Name
+                            },
+                            [3] = money
+                        })
+                    elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                self.Name,
+                                CFrameToTable(Args[1].HumanoidRootPart.Position)
+                            }
+                        })
+                    elseif self.Name == "SellUnit" and JSON.macro_sell then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {
+                                Args[1]:GetFullName(),
+                                CFrameToTable(Args[1].HumanoidRootPart.Position),
+                                self.Name
+                            }
+                        })
+                    elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
+                        table.insert(Macros[JSON.macro_profile], {
+                            [1] = timeElapsed(),
+                            [2] = {self.Name}
+                        })
+                    end
+
+                    -- Save after recording if conditions are met
+                    task.spawn(function()
+                        Save()
+                    end)
+                end
+            end
+        end
+
+        return namecall_original(self, ...)
+    end)
+end
+
 
 local Player = game:GetService("Players").LocalPlayer
 repeat
