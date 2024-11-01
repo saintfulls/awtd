@@ -1,4 +1,3 @@
-
 for _, v in pairs(getconnections(game.Players.LocalPlayer.Idled)) do
     v:Disable()
 end
@@ -194,16 +193,21 @@ function MacroPlayback()
 end
 
 function CFrameToTable(cframe)
+    local x, y, z = cframe.Position.X, cframe.Position.Y, cframe.Position.Z
+    local roll, pitch, yaw = cframe:ToOrientation()
+    
     return {
-        Position = {cframe.X, cframe.Y, cframe.Z}, 
-        Angles = {cframe:ToEulerAnglesXYZ()} 
+        Position = {x, y, z},
+        Angles = {roll, pitch, yaw}
     }
 end
 
-
 function TableToCFrame(cframeTable)
-    return CFrame.new(cframeTable.Position[1], cframeTable.Position[2], cframeTable.Position[3]) *
-           CFrame.Angles(cframeTable.Angles[1], cframeTable.Angles[2], cframeTable.Angles[3])
+    local position = cframeTable.Position
+    local angles = cframeTable.Angles
+
+    return CFrame.new(position[1], position[2], position[3]) *
+           CFrame.Angles(angles[1], angles[2], angles[3])
 end
 
 if game.PlaceId ~= 6558526079 then
