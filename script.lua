@@ -193,9 +193,20 @@ function MacroPlayback()
 end
 
 function CFrameToTable(cframe)
-    local x, y, z = cframe.Position.X, cframe.Position.Y, cframe.Position.Z
-    local roll, pitch, yaw = cframe:ToOrientation()
+    local x, y, z, r00, r01, r02, r10, r11, r12, r20, r21, r22 = cframe:components()
     
+    -- Calculate yaw, pitch, and roll from the matrix components
+    local pitch = math.asin(-r20)
+    local yaw, roll
+
+    if math.cos(pitch) > 1e-6 then
+        roll = math.atan2(r10, r00)
+        yaw = math.atan2(r21, r22)
+    else
+        roll = 0
+        yaw = math.atan2(-r01, r11)
+    end
+
     return {
         Position = {x, y, z},
         Angles = {roll, pitch, yaw}
@@ -209,6 +220,7 @@ function TableToCFrame(cframeTable)
     return CFrame.new(position[1], position[2], position[3]) *
            CFrame.Angles(angles[1], angles[2], angles[3])
 end
+
 
 if game.PlaceId ~= 6558526079 then
     local game_metatable = getrawmetatable(game)
