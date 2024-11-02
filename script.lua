@@ -365,7 +365,7 @@ local Tabs = {
 
 local Game_Main = Tabs.Game:CreateSection("Toggles")
 
-Tabs.Macro:CreateToggle({
+Tabs.Game:CreateToggle({
     Name = "Automatic Start Game",
     CurrentValue = JSON.auto_start_game,
     Flag = "Toggle1",
@@ -389,7 +389,7 @@ Tabs.Macro:CreateToggle({
     end
 })
 
-Tabs.Macro:CreateToggle({
+Tabs.Game:CreateToggle({
     Name = "Automatic 2x Speed",
     CurrentValue = JSON.auto_2x,
     Flag = "Toggle1",
@@ -678,4 +678,3 @@ function SetToggle(Toggle, value)
         Macro_Playback:Set(value)
     end
 end
-
