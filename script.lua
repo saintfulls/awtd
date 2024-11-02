@@ -29,7 +29,11 @@ local DefaultSettings = {
     macro_playback = false,
     auto_join_game = false,
     auto_join_level = 1,
-    auto_2x = false
+    auto_next_story = false,
+    auto_join_delay = 10,
+    auto_2x = false,
+    auto_join_increment_story = false,
+    auto_start_game = false
 }
 
 -- Make required folders if they don't exist
@@ -62,10 +66,31 @@ if not isfolder(folder_name) then
     makefolder(folder_name)
 end
 
+local function loadMacroProfile()
+    if not isfile(folder_name .. "/" .. JSON.macro_profile .. ".json") then
+        JSON.macro_profile = "Default Profile"
+    end
+
+    local success, macroData = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(readfile(folder_name .. "/" .. JSON.macro_profile .. ".json"))
+    end)
+
+    if not success then
+        print("Error loading macro profile, using default settings.")
+        JSON.macro_profile = "Default Profile"
+    else
+        Macros = macroData
+    end
+end
+
+
+
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 end
+
+loadMacroProfile()
 
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
@@ -116,7 +141,6 @@ function MacroPlayback()
         task.wait()
     until game.Players.LocalPlayer:FindFirstChild("leaderstats").Cash ~= nil
 
- 
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -183,6 +207,8 @@ function MacroPlayback()
         elseif action[1] == "SkipWave" and JSON.macro_skipwave then
             game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
         end
+
+        task.wait(0.24)
     end
 end
 
@@ -296,11 +322,14 @@ function AutomaticChangeSpeed()
 end
 
 function JoinGame()
-    while JSON.auto_join_game do
-        if JSON.auto_join_level then
-            
-        end
+    task.wait(JSON.auto_join_delay)
+
+    if not JSON.auto_join_game then
+        return
     end
+
+    local args = {}
+
 end
 
 local Player = game:GetService("Players").LocalPlayer
@@ -312,16 +341,19 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.auto_2x then
         task.spawn(AutomaticChangeSpeed)
     end
+
     task.spawn(StartMacroTimer)
 else
-
+    if JSON.auto_join_game then
+        task.spawn(JoinGame)
+    end
 end
 local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Sapphire Hub",
     LoadingTitle = "Anime World Tower Defense",
-    LoadingSubtitle = "by Saintfulls",
+    LoadingSubtitle = "by saintfulls",
     ConfigurationSaving = {
         Enabled = false,
         FolderName = "SapphireHub/Anime World Tower Defense/Settings/",
@@ -355,10 +387,34 @@ local Tabs = {
 local Game_Main = Tabs.Game:CreateSection("Toggles")
 
 Tabs.Macro:CreateToggle({
+    Name = "Automatic Start Game",
+    CurrentValue = JSON.auto_start_game,
+    Flag = "Toggle1",
+    Callback = function(Value)
+        JSON.auto_start_game = Value
+        Save()
+
+        task.spawn(function()
+            while Value do
+                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback then
+                    if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
+                        game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
+                        "[Ready]" then
+                        game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+                    end
+                end
+                task.wait()
+            end
+        end)
+
+    end
+})
+
+Tabs.Macro:CreateToggle({
     Name = "Automatic 2x Speed",
     CurrentValue = JSON.auto_2x,
     Flag = "Toggle1",
-    Callback = function(Value)
+    Callback = function(value)
         JSON.auto_2x = value
         Save()
 
@@ -371,15 +427,15 @@ Tabs.Macro:CreateToggle({
 local Lobby_Main = Tabs.Lobby:CreateSection("Toggles")
 
 Tabs.Lobby:CreateToggle({
-    Name = "Auto Join Story",
+    Name = "Auto Join Game",
     CurrentValue = JSON.auto_join_game,
     Flag = "Toggle1",
-    Callback = function(Value)
-        JSON.auto_2x = value
+    Callback = function(value)
+        JSON.auto_join_game = value
         Save()
 
-        if value then
-            task.spawn(AutomaticChangeSpeed)
+        if value and game.Workspace:FindFirstChild("PlayerPortal") then
+            task.spawn(JoinGame)
         end
     end
 })
@@ -388,15 +444,28 @@ local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
 
 Tabs.Lobby:CreateToggle({
     Name = "Auto Next Story Level",
-    CurrentValue = JSON.auto,
+    CurrentValue = JSON.auto_join_increment_story,
     Flag = "Toggle1",
-    Callback = function(Value)
-        JSON.auto_2x = value
+    Callback = function(value)
+        JSON.auto_join_increment_story = value
         Save()
 
-        if value and not game.Workspace:FindFirstChild("Queue") then
-            task.spawn(AutomaticChangeSpeed)
+        if value then
+            task.spawn()
         end
+    end
+})
+
+Tabs.Lobby:CreateSlider({
+    Name = "Auto Join Delay",
+    Range = {0, 60},
+    Increment = 1,
+    Suffix = "seconds",
+    CurrentValue = JSON.auto_join_delay,
+    Flag = "Slider1",
+    Callback = function(Value)
+        JSON.auto_join_delay = Value
+        Save()
     end
 })
 
@@ -423,10 +492,12 @@ local Macro_list = Tabs.Macro:CreateDropdown({
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
+
         JSON.macro_profile = Option
         if Macros[Option] == nil then
             Macros[Option] = {}
         end
+
         Save()
 
         Rayfield:Notify({
@@ -489,6 +560,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
 
                 }
             })
+            SetToggle("Playback", false)
         end
     end
 })
@@ -503,6 +575,7 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
 
         if value then
             task.spawn(MacroPlayback)
+            SetToggle("Record", false)
         end
     end
 })
@@ -607,3 +680,12 @@ Tabs.Macro:CreateToggle({
 })
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
+
+function SetToggle(Toggle, value)
+    if Toggle == "Record" then
+        Macro_Record:Set(value)
+    elseif Toggle == "Playback" then
+        Macro_Playback:Set(value)
+    end
+
+end
