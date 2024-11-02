@@ -219,6 +219,8 @@ function TableToCFrame(cframeTable)
     return cframe
 end
 
+
+
 if game.PlaceId ~= 6558526079 then
     local game_metatable = getrawmetatable(game)
     local namecall_original = game_metatable.__namecall
@@ -663,6 +665,7 @@ Tabs.Macro:CreateToggle({
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
 
+
 function SetToggle(Toggle, value)
     if Toggle == "Record" then
         Macro_Record:Set(value)
@@ -671,5 +674,3 @@ function SetToggle(Toggle, value)
     end
 
 end
-
-
