@@ -127,6 +127,11 @@ function MacroPlayback()
             local remote_arguments = v[2]
             local money = v[3]
 
+            local action = remote_arguments[2]
+            local parameters = remote_arguments[2]
+
+            print("Action:", action[3], "Time:", time, "Params:", parameters)
+
             if money ~= nil then
                 repeat
                     task.wait()
@@ -141,8 +146,6 @@ function MacroPlayback()
                 return
             end
 
-            local action = remote_arguments[2]
-            local parameters = remote_arguments[2]
             print(action[3])
             if action[3] == "SpawnUnit" and JSON.macro_summon then
                 local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
@@ -321,7 +324,9 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.auto_2x then
         task.spawn(AutomaticChangeSpeed)
     end
-
+    if JSON.macro_playback then
+        task.spawn(MacroPlayback)
+    end
     task.spawn(StartMacroTimer)
 else
     if JSON.auto_join_game then
@@ -373,14 +378,15 @@ Tabs.Game:CreateToggle({
     Callback = function(Value)
         JSON.auto_start_game = Value
         Save()
-
+        local Started = false
         task.spawn(function()
             while Value do
-                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback then
+                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
                     if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
                         game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
                         "[Ready]" then
                         game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
+                        Started = true
                     end
                 end
                 task.wait()
