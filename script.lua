@@ -66,23 +66,6 @@ if not isfolder(folder_name) then
     makefolder(folder_name)
 end
 
-local function loadMacroProfile()
-    if not isfile(folder_name .. "/" .. JSON.macro_profile .. ".json") then
-        JSON.macro_profile = "Default Profile"
-    end
-
-    local success, macroData = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(readfile(folder_name .. "/" .. JSON.macro_profile .. ".json"))
-    end)
-
-    if not success then
-        print("Error loading macro profile, using default settings.")
-        JSON.macro_profile = "Default Profile"
-    else
-        Macros = macroData
-    end
-end
-
 
 
 if #listfiles(folder_name) == 0 then
@@ -90,7 +73,6 @@ if #listfiles(folder_name) == 0 then
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 end
 
-loadMacroProfile()
 
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
@@ -129,7 +111,7 @@ function Save()
 end
 
 Save()
-
+loadMacroProfile()
 for k, v in pairs(DefaultSettings) do
     if JSON[k] == nil then
         JSON[k] = v
@@ -689,3 +671,21 @@ function SetToggle(Toggle, value)
     end
 
 end
+
+function loadMacroProfile()
+    if not isfile(folder_name .. "/" .. JSON.macro_profile .. ".json") then
+        JSON.macro_profile = "Default Profile"
+    end
+
+    local success, macroData = pcall(function()
+        return game:GetService("HttpService"):JSONDecode(readfile(folder_name .. "/" .. JSON.macro_profile .. ".json"))
+    end)
+
+    if not success then
+        print("Error loading macro profile, using default settings.")
+        JSON.macro_profile = "Default Profile"
+    else
+        Macros = macroData
+    end
+end
+
