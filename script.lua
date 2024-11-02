@@ -240,20 +240,20 @@ if game.PlaceId ~= 6558526079 then
                     elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.Position), -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                                    self.Name},
                             [3] = money
                         })
                     elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), self.Name, CFrameToTable(Args[1].HumanoidRootPart.Position) -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), self.Name, CFrameToTable(Args[1].HumanoidRootPart.CFrame) -- Convert CFrame to table
                             }
                         })
                     elseif self.Name == "SellUnit" and JSON.macro_sell then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.Position), -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                                    self.Name}
                         })
                     elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
