@@ -111,7 +111,7 @@ function Save()
 end
 
 Save()
-loadMacroProfile()
+
 for k, v in pairs(DefaultSettings) do
     if JSON[k] == nil then
         JSON[k] = v
@@ -670,22 +670,5 @@ function SetToggle(Toggle, value)
         Macro_Playback:Set(value)
     end
 
-end
-
-function loadMacroProfile()
-    if not isfile(folder_name .. "/" .. JSON.macro_profile .. ".json") then
-        JSON.macro_profile = "Default Profile"
-    end
-
-    local success, macroData = pcall(function()
-        return game:GetService("HttpService"):JSONDecode(readfile(folder_name .. "/" .. JSON.macro_profile .. ".json"))
-    end)
-
-    if not success then
-        print("Error loading macro profile, using default settings.")
-        JSON.macro_profile = "Default Profile"
-    else
-        Macros = macroData
-    end
 end
 
