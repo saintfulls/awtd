@@ -66,13 +66,10 @@ if not isfolder(folder_name) then
     makefolder(folder_name)
 end
 
-
-
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 end
-
 
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
@@ -219,8 +216,6 @@ function TableToCFrame(cframeTable)
     return cframe
 end
 
-
-
 if game.PlaceId ~= 6558526079 then
     local game_metatable = getrawmetatable(game)
     local namecall_original = game_metatable.__namecall
@@ -245,20 +240,20 @@ if game.PlaceId ~= 6558526079 then
                     elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].PrimaryPart.Position), -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.Position), -- Convert CFrame to table
                                    self.Name},
                             [3] = money
                         })
                     elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), self.Name, CFrameToTable(Args[1].PrimaryPart.Position) -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), self.Name, CFrameToTable(Args[1].HumanoidRootPart.Position) -- Convert CFrame to table
                             }
                         })
                     elseif self.Name == "SellUnit" and JSON.macro_sell then
                         table.insert(Macros[JSON.macro_profile], {
                             [1] = timeElapsed(),
-                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].PrimaryPart.Position), -- Convert CFrame to table
+                            [2] = {Args[1]:GetFullName(), CFrameToTable(Args[1].HumanoidRootPart.Position), -- Convert CFrame to table
                                    self.Name}
                         })
                     elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
@@ -528,6 +523,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 }
             })
         else
+
             Rayfield:Notify({
                 Title = "Macro",
                 Content = "Recording Macro :" .. JSON.macro_profile,
@@ -535,7 +531,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 Image = 4483362458,
                 Actions = { -- Notification Buttons
 
-                    Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                    Ignore = {
                         Name = "Okay!",
                         Callback = function()
 
@@ -611,6 +607,16 @@ local Button = Tabs.Macro:CreateButton({
     end
 })
 
+local Button = Tabs.Macro:CreateButton({
+    Name = "Clear Profile",
+    Callback = function()
+        if Macros[profile_name] ~= nil then
+            Macros[profile_name] = {}
+            Save()
+        end
+    end
+})
+
 local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
 
 Tabs.Macro:CreateToggle({
@@ -665,12 +671,10 @@ Tabs.Macro:CreateToggle({
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
 
-
 function SetToggle(Toggle, value)
     if Toggle == "Record" then
         Macro_Record:Set(value)
     elseif Toggle == "Playback" then
         Macro_Playback:Set(value)
     end
-
 end
