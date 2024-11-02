@@ -145,7 +145,7 @@ function MacroPlayback()
 
         local action = remote_arguments[2]
         local parameters = remote_arguments[2]
-
+        print(action[3])
         if action[3] == "SpawnUnit" and JSON.macro_summon then
             local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
@@ -184,7 +184,7 @@ function MacroPlayback()
             end
 
         elseif action[1] == "SkipWave" and JSON.macro_skipwave then
-            game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+            game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
         end
 
         task.wait(0.24)
@@ -379,7 +379,7 @@ Tabs.Game:CreateToggle({
                     if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
                         game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
                         "[Ready]" then
-                        game:GetService("ReplicatedStorage").Remote.SkipWave:FireServer()
+                        game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
                     end
                 end
                 task.wait()
@@ -610,7 +610,7 @@ local Button = Tabs.Macro:CreateButton({
 local Button = Tabs.Macro:CreateButton({
     Name = "Clear Profile",
     Callback = function()
-        if Macros[profile_name] ~= nil then
+        if Macros[profile_name] then
             Macros[profile_name] = {}
             Save()
         end
