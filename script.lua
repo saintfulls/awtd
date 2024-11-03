@@ -149,7 +149,7 @@ function MacroPlayback()
         if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
            
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
                         local args = {unit}
