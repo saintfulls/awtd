@@ -11,7 +11,7 @@ local po, ts = game.CoreGui.RobloxPromptGui.promptOverlay, game:GetService("Tele
 local teleportOnFailed = po.ChildAdded:Connect(function(a)
     if a.Name == "ErrorPrompt" then
         repeat
-            ts:Teleport(game.PlaceId)
+            ts:Teleport(game.GameId)
             task.wait(1)
         until false
     end
@@ -343,7 +343,7 @@ function JoinGame()
         }
         game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
         task.wait(0.3)
-        firesignal(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton.Activated)
+        clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
     end
 end
 
@@ -528,11 +528,11 @@ Tabs.Lobby:CreateSlider({
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = JSON.auto_join_difficulty, -- Remove the curly braces
+    CurrentOption = JSON.auto_join_difficulty, 
     MultipleOptions = false,
-    Flag = "Dropdown1", -- A flag is the identifier for the configuration file
+    Flag = "Dropdown1", 
     Callback = function(Option)
-        JSON.auto_join_difficulty = Option -- This will correctly assign the selected option as a string
+        JSON.auto_join_difficulty = Option 
         Save()
     end,
 })
@@ -765,4 +765,15 @@ function SetToggle(Toggle, value)
     elseif Toggle == "Playback" then
         Macro_Playback:Set(value)
     end
+end
+
+function clickUI(gui)
+    local GuiService = game:GetService("GuiService")
+    local VirtualInputManager = game:GetService("VirtualInputManager")
+
+    GuiService.SelectedObject = gui
+
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+    task.wait(0.04)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
