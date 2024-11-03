@@ -342,7 +342,7 @@ function JoinGame()
            
         }
         game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
-        task.wait(0.3)
+        task.wait(2)
         clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
     end
 end
