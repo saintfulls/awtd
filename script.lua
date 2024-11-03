@@ -128,10 +128,6 @@ function MacroPlayback()
         local action = remote_arguments[2]
         local parameters = remote_arguments[2]
 
-        print("Action:", action[3], "Time:", time, "Params:", parameters)
-
-        
-
         repeat
             task.wait()
         until timeElapsed() >= time or time < 0
@@ -326,6 +322,22 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.macro_playback then
         task.spawn(MacroPlayback)
     end
+
+    if JSON.auto_start_game then
+        task.spawn(function()
+            while JSON.auto_start_game do
+                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
+                    if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
+                        game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
+                        "[Ready]" then
+                        game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
+                    end
+                end
+                task.wait()
+            end
+        end)
+
+    end
     task.spawn(StartMacroTimer)
 else
     if JSON.auto_join_game then
@@ -378,19 +390,18 @@ Tabs.Game:CreateToggle({
         JSON.auto_start_game = Value
         Save()
         local Started = false
-        task.spawn(function()
-            while Value do
-                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
-                    if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
-                        game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
-                        "[Ready]" then
-                        game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
-                        Started = true
-                    end
+
+        while Value do
+            if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
+                if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
+                    game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
+                    "[Ready]" then
+                    game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
+                    Started = true
                 end
-                task.wait()
             end
-        end)
+            task.wait()
+        end
 
     end
 })
