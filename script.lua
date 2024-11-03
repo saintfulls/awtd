@@ -520,7 +520,7 @@ Tabs.Lobby:CreateSlider({
     end
 })
 
-local Dropdown = Tab:CreateDropdown({
+Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal","Insane", "Nightmare", "Challenger"},
     CurrentOption = {JSON.auto_join_difficulty},
