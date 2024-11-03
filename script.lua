@@ -484,7 +484,9 @@ Tabs.Lobby:CreateToggle({
         Save()
 
         if value then
-            task.spawn()
+            task.spawn(function ()
+                
+            end)
         end
     end
 })
@@ -528,7 +530,7 @@ Tabs.Lobby:CreateSlider({
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = JSON.auto_join_difficulty, 
+    CurrentOption = {JSON.auto_join_difficulty}, 
     MultipleOptions = false,
     Flag = "Dropdown1", 
     Callback = function(Option)
