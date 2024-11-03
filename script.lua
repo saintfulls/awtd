@@ -33,7 +33,8 @@ local DefaultSettings = {
     auto_join_delay = 10,
     auto_2x = false,
     auto_join_increment_story = false,
-    auto_start_game = false
+    auto_start_game = false,
+    auto_join_difficulty = "Normal"
 }
 
 -- Make required folders if they don't exist
@@ -149,7 +150,7 @@ function MacroPlayback()
         if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
 
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
                         local args = {unit}
@@ -161,7 +162,7 @@ function MacroPlayback()
         if parameters[3] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
@@ -172,7 +173,7 @@ function MacroPlayback()
         if parameters[3] == "SellUnit" and JSON.macro_sell then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
@@ -245,7 +246,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1],
+                            [1] = Args[1].Name,
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         },
@@ -255,7 +256,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1],
+                            [1] = Args[1].Name,
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         }
@@ -264,7 +265,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1],
+                            [1] = Args[1].Name,
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         }
@@ -323,7 +324,21 @@ function JoinGame()
     end
 
     local args = {}
-
+    if JSON.auto_join_mode == "Story" then
+        task.wait(1)
+        args = {
+            [1] = {
+                ["StageSelect"] = tostring(JSON.auto_join_level),
+                ["Image"] = "",
+                ["FriendOnly"] = true,
+                ["Difficult"] = JSON.auto_join_difficulty
+            }
+           
+        }
+        game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+        task.wait(0.3)
+        firesignal(game.Players.LocalPlayer.PlayerGui.InRoomUI.RoomUI.QuickStart.TextButton.Activated)
+    end
 end
 
 local Player = game:GetService("Players").LocalPlayer
@@ -468,9 +483,33 @@ Tabs.Lobby:CreateToggle({
     end
 })
 
+local StoryLevel = 0
+local ClearedStages = game.Players.LocalPlayer.Data.ClearedStages.Value
+
+local stageValues = string.split(ClearedStages, ",")
+
+for _, stage in ipairs(stageValues) do
+    local stageNum = tonumber(stage) -- Convert to number
+    if stageNum and stageNum > StoryLevel then
+        StoryLevel = stageNum + 1
+    end
+end
+
+Tabs.Lobby:CreateSlider({
+    Name = "Story Mode Level",
+    Range = {1, StoryLevel},
+    Increment = 1,
+    Suffix = "level",
+    CurrentValue = JSON.auto_join_level,
+    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Value)
+        JSON.auto_join_level = Value
+        Save()
+    end,
+ })
 Tabs.Lobby:CreateSlider({
     Name = "Auto Join Delay",
-    Range = {0, 60},
+    Range = {1, 60},
     Increment = 1,
     Suffix = "seconds",
     CurrentValue = JSON.auto_join_delay,
@@ -481,6 +520,17 @@ Tabs.Lobby:CreateSlider({
     end
 })
 
+local Dropdown = Tab:CreateDropdown({
+    Name = "Story Difficulty",
+    Options = {"Normal","Insane", "Nightmare", "Challenger"},
+    CurrentOption = {JSON.auto_join_difficulty},
+    MultipleOptions = false,
+    Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Callback = function(Option)
+        JSON.auto_join_difficulty = Option
+        Save()
+    end,
+ })
 local Macro_Main = Tabs.Macro:CreateSection("Main")
 
 local profile_list = {}
@@ -606,7 +656,7 @@ local profile_name_text = Tabs.Macro:CreateInput({
     end
 })
 
-local Button = Tabs.Macro:CreateButton({
+Tabs.Macro:CreateButton({
     Name = "Create Profile",
     Callback = function()
         if Macros[profile_name] ~= nil then
@@ -640,7 +690,7 @@ local Button = Tabs.Macro:CreateButton({
     end
 })
 
-local Button = Tabs.Macro:CreateButton({
+Tabs.Macro:CreateButton({
     Name = "Clear Profile",
     Callback = function()
         Macros[JSON.macro_profile] = {}
@@ -701,6 +751,7 @@ Tabs.Macro:CreateToggle({
 })
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
+
 
 function SetToggle(Toggle, value)
     if Toggle == "Record" then
