@@ -525,18 +525,18 @@ Tabs.Lobby:CreateSlider({
         Save()
     end
 })
-
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
-    Options = {"Normal","Insane", "Nightmare", "Challenger"},
-    CurrentOption = {JSON.auto_join_difficulty},
+    Options = {"Normal", "Insane", "Nightmare", "Challenger"},
+    CurrentOption = JSON.auto_join_difficulty, -- Remove the curly braces
     MultipleOptions = false,
-    Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+    Flag = "Dropdown1", -- A flag is the identifier for the configuration file
     Callback = function(Option)
-        JSON.auto_join_difficulty = Option
+        JSON.auto_join_difficulty = Option -- This will correctly assign the selected option as a string
         Save()
     end,
- })
+})
+
 local Macro_Main = Tabs.Macro:CreateSection("Main")
 
 local profile_list = {}
