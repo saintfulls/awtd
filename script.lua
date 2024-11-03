@@ -98,6 +98,13 @@ end) then
     JSON = DefaultSettings
 end
 
+if typeof(JSON.macro_profile) == "table" then
+    JSON.macro_profile = "Default Profile"
+end
+if typeof(JSON.auto_join_difficulty) == "table" then
+    JSON.auto_join_difficulty = "Normal"
+end
+
 function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
@@ -342,7 +349,7 @@ function JoinGame()
            
         }
         game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
-        task.wait(2)
+        task.wait(1)
         clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
     end
 end
