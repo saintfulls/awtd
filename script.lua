@@ -116,54 +116,53 @@ for k, v in pairs(DefaultSettings) do
 end
 
 function MacroPlayback()
-    if game.PlaceId ~= 6558526079 then
+    table.sort(Macros[JSON.macro_profile], function(a, b)
+        return a[1] < b[1]
+    end)
 
-        table.sort(Macros[JSON.macro_profile], function(a, b)
-            return a[1] < b[1]
-        end)
+    for _, v in pairs(Macros[JSON.macro_profile]) do
+        local time = v[1]
+        local remote_arguments = v[2]
+        local money = v[3]
 
-        for _, v in pairs(Macros[JSON.macro_profile]) do
-            local time = v[1]
-            local remote_arguments = v[2]
-            local money = v[3]
+        local action = remote_arguments[2]
+        local parameters = remote_arguments[2]
 
-            local action = remote_arguments[2]
-            local parameters = remote_arguments[2]
+        print("Action:", action[3], "Time:", time, "Params:", parameters)
 
-            print("Action:", action[3], "Time:", time, "Params:", parameters)
+        
 
-            if money ~= nil then
-                repeat
-                    task.wait()
-                until GetMoney() >= money
-            end
+        repeat
+            task.wait()
+        until timeElapsed() >= time or time < 0
 
+        if money ~= nil then
             repeat
                 task.wait()
-            until timeElapsed() >= time or time < 0
+            until GetMoney() >= money
+        end
 
-            if not JSON.macro_playback then
-                return
-            end
+        if not JSON.macro_playback then
+            return
+        end
 
-            print(action[3])
-            if action[3] == "SpawnUnit" and JSON.macro_summon then
-                local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
-                game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
-
-            elseif action[3] == "UpgradeUnit" and JSON.macro_summon then
-                local args = {parameters[1]}
-                for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                    if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
-                        local magnitude =
-                            (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
-                        if magnitude == 0 then
-                            game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
-                        end
+        print(action[3])
+        if action[3] == "SpawnUnit" and JSON.macro_summon then
+            local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
+            game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
+        end
+        if action[3] == "UpgradeUnit" and JSON.macro_summon then
+            local args = {parameters[1]}
+            for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                    local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
+                    if magnitude == 0 then
+                        game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
                     end
                 end
+            end
 
-            elseif action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+            if action[2] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
                 local args = {parameters[1]}
                 for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                     if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
@@ -174,8 +173,8 @@ function MacroPlayback()
                         end
                     end
                 end
-
-            elseif action[3] == "SellUnit" and JSON.macro_sell then
+            end
+            if action[3] == "SellUnit" and JSON.macro_sell then
                 local args = {parameters[1]}
                 for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                     if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
@@ -186,8 +185,8 @@ function MacroPlayback()
                         end
                     end
                 end
-
-            elseif action[1] == "SkipWave" and JSON.macro_skipwave then
+            end
+            if action[1] == "SkipWave" and JSON.macro_skipwave then
                 game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
             end
 
@@ -560,7 +559,7 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
         JSON.macro_playback = Value
         Save()
 
-        if value then
+        if Value then
             task.spawn(MacroPlayback)
             SetToggle("Record", false)
         end
