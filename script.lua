@@ -126,7 +126,7 @@ function MacroPlayback()
         local money = v[3]
 
         local parameters = remote_arguments
-        local action = parameters[3]
+
         repeat
             task.wait()
         until timeElapsed() >= time or time < 0
@@ -142,11 +142,11 @@ function MacroPlayback()
         end
 
         print(action)
-        if action == "SpawnUnit" and JSON.macro_summon then
+        if parameters[3] == "SpawnUnit" and JSON.macro_summon then
             local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
         end
-        if action == "UpgradeUnit" and JSON.macro_summon then
+        if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
@@ -157,7 +157,7 @@ function MacroPlayback()
                 end
             end
         end
-        if action == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+        if parameters[3] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
@@ -168,7 +168,7 @@ function MacroPlayback()
                 end
             end
         end
-        if action == "SellUnit" and JSON.macro_sell then
+        if parameters[3] == "SellUnit" and JSON.macro_sell then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
@@ -179,7 +179,7 @@ function MacroPlayback()
                 end
             end
         end
-        if action == "SkipWave" and JSON.macro_skipwave then
+        if parameters[1] == "SkipWave" and JSON.macro_skipwave then
             game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
         end
 
@@ -226,59 +226,59 @@ if game.PlaceId ~= 6558526079 then
 
         if Args and (method == "FireServer" or method == "InvokeServer") then
             if JSON.macro_record and not JSON.macro_playback then
-                
-                    money = GetMoney()
-                    if self.Name == "SpawnUnit" and JSON.macro_summon then
-                        table.insert(Macros[JSON.macro_profile], {
-                            [1] = timeElapsed(),
-                            [2] = {
-                                [1] = Args[1],
-                                [2] = CFrameToTable(Args[2]),
-                                [3] = self.Name
-                            },
-                            [3] = money
-                        })
-                    elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
-                        table.insert(Macros[JSON.macro_profile], {
-                            [1] = timeElapsed(),
-                            [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
-                                [3] = self.Name
-                            },
-                            [3] = money
-                        })
-                    elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
-                        table.insert(Macros[JSON.macro_profile], {
-                            [1] = timeElapsed(),
-                            [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
-                                [3] = self.Name -- Convert CFrame to table
-                            }
-                        })
-                    elseif self.Name == "SellUnit" and JSON.macro_sell then
-                        table.insert(Macros[JSON.macro_profile], {
-                            [1] = timeElapsed(),
-                            [2] = {
-                                [1] = Args[1]:GetFullName(),
-                                [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
-                                [3] = self.Name
-                            }
-                        })
-                    elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
-                        table.insert(Macros[JSON.macro_profile], {
-                        [1] = timeElapsed(),
-                            [2] = {
-                                [3] = self.Name
-                            }
-                        })
-                    end
 
-                    task.spawn(function()
-                        Save()
-                    end)
-                
+                money = GetMoney()
+                if self.Name == "SpawnUnit" and JSON.macro_summon then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1],
+                            [2] = CFrameToTable(Args[2]),
+                            [3] = self.Name
+                        },
+                        [3] = money
+                    })
+                elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1]:GetFullName(),
+                            [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
+                            [3] = self.Name
+                        },
+                        [3] = money
+                    })
+                elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1]:GetFullName(),
+                            [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
+                            [3] = self.Name -- Convert CFrame to table
+                        }
+                    })
+                elseif self.Name == "SellUnit" and JSON.macro_sell then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1]:GetFullName(),
+                            [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
+                            [3] = self.Name
+                        }
+                    })
+                elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = self.Name
+                        }
+                    })
+                end
+
+                task.spawn(function()
+                    Save()
+                end)
+
             end
         end
 
@@ -339,7 +339,7 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.auto_start_game then
         task.spawn(function()
             while JSON.auto_start_game do
-                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
+                if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback then
                     if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
                         game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
                         "[Ready]" then
