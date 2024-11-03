@@ -71,6 +71,9 @@ end
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
+
+elseif not isfile(folder_name.."/"..JSON.macro_profile..".json") and  isfile(folder_name.."/".."Default Profile.json") then
+    JSON.macro_profile = "Default Profile"
 end
 
 for _, file in pairs(listfiles(folder_name)) do
@@ -490,7 +493,7 @@ local ClearedStages = game.Players.LocalPlayer.Data.ClearedStages.Value
 local stageValues = string.split(ClearedStages, ",")
 
 for _, stage in ipairs(stageValues) do
-    local stageNum = tonumber(stage) -- Convert to number
+    local stageNum = tonumber(stage)
     if stageNum and stageNum > StoryLevel then
         StoryLevel = stageNum + 1
     end
