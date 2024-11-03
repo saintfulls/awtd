@@ -98,11 +98,13 @@ end) then
     JSON = DefaultSettings
 end
 
-if typeof(JSON.macro_profile) == "table" then
-    JSON.macro_profile = "Default Profile"
-end
-if typeof(JSON.auto_join_difficulty) == "table" then
-    JSON.auto_join_difficulty = "Normal"
+local function ensureStringFields()
+    if typeof(JSON.macro_profile) == "table" then
+        JSON.macro_profile = "Default Profile"  -- or some other default value you want
+    end
+    if typeof(JSON.auto_join_difficulty) == "table" then
+        JSON.auto_join_difficulty = "Normal"  -- or some other default value you want
+    end
 end
 
 function SaveMacros()
@@ -112,8 +114,10 @@ function SaveMacros()
         writefile(folder_name .. "/" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
+ensureStringFields()
 
 function Save()
+    ensureStringFields()
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(JSON))
     SaveMacros()
 end
