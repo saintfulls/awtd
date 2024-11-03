@@ -34,7 +34,8 @@ local DefaultSettings = {
     auto_2x = false,
     auto_join_increment_story = false,
     auto_start_game = false,
-    auto_join_difficulty = "Normal"
+    auto_join_difficulty = "Normal",
+    auto_join_mode = "Story"
 }
 
 -- Make required folders if they don't exist
