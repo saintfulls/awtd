@@ -72,8 +72,7 @@ if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 
-elseif not isfile(folder_name.."/"..JSON.macro_profile..".json") and  isfile(folder_name.."/".."Default Profile.json") then
-    JSON.macro_profile = "Default Profile"
+
 end
 
 for _, file in pairs(listfiles(folder_name)) do
@@ -120,6 +119,9 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
+if not isfile(folder_name.."/"..JSON.macro_profile..".json") and  isfile(folder_name.."/".."Default Profile.json") then
+    JSON.macro_profile = "Default Profile"
+end
 function MacroPlayback()
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
