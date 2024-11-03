@@ -531,7 +531,7 @@ Tabs.Lobby:CreateDropdown({
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
-        JSON.auto_join_difficulty = Option
+        JSON.auto_join_difficulty = Option[1]
         Save()
     end
 })
@@ -560,16 +560,16 @@ local Macro_list = Tabs.Macro:CreateDropdown({
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
         print(Option)
-        JSON.macro_profile = Option
-        if Macros[Option] == nil then
-            Macros[Option] = {}
+        JSON.macro_profile = Option[1]
+        if Macros[Option[1]] == nil then
+            Macros[Option[1]] = {}
         end
 
         Save()
 
         Rayfield:Notify({
             Title = "Macro Profile",
-            Content = "Using " .. Option,
+            Content = "Using " .. Option[1],
             Duration = 6.5,
             Image = 4483362458,
             Actions = { -- Notification Buttons
