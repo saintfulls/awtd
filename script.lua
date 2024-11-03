@@ -11,7 +11,7 @@ local po, ts = game.CoreGui.RobloxPromptGui.promptOverlay, game:GetService("Tele
 local teleportOnFailed = po.ChildAdded:Connect(function(a)
     if a.Name == "ErrorPrompt" then
         repeat
-            ts:Teleport(game.GameId)
+            ts:Teleport(game.PlaceId)
             task.wait(1)
         until false
     end
@@ -33,9 +33,7 @@ local DefaultSettings = {
     auto_join_delay = 10,
     auto_2x = false,
     auto_join_increment_story = false,
-    auto_start_game = false,
-    auto_join_difficulty = "Normal",
-    auto_join_mode = "Story"
+    auto_start_game = false
 }
 
 -- Make required folders if they don't exist
@@ -71,7 +69,6 @@ end
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
-
 end
 
 for _, file in pairs(listfiles(folder_name)) do
@@ -106,7 +103,6 @@ function SaveMacros()
 end
 
 function Save()
-
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(JSON))
     SaveMacros()
 end
@@ -151,9 +147,9 @@ function MacroPlayback()
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
         end
         if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
-
+           
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
                         local args = {unit}
@@ -165,7 +161,7 @@ function MacroPlayback()
         if parameters[3] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.ChangeUnitModeFunction:InvokeServer(unpack(args))
@@ -176,7 +172,7 @@ function MacroPlayback()
         if parameters[3] == "SellUnit" and JSON.macro_sell then
             local args = {parameters[1]}
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
-                if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
+                if unit == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
                         game:GetService("ReplicatedStorage").Remote.SellUnit:InvokeServer(unpack(args))
@@ -185,9 +181,7 @@ function MacroPlayback()
             end
         end
         if parameters[1] == "SkipWave" and JSON.macro_skipwave then
-            if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible then
-                game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
-            end
+            game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
         end
 
         task.wait(0.24)
@@ -249,7 +243,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1].Name,
+                            [1] = Args[1],
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         },
@@ -259,7 +253,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1].Name,
+                            [1] = Args[1],
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         }
@@ -268,7 +262,7 @@ if game.PlaceId ~= 6558526079 then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
-                            [1] = Args[1].Name,
+                            [1] = Args[1],
                             [2] = CFrameToTable(Args[1].HumanoidRootPart.CFrame), -- Convert CFrame to table
                             [3] = self.Name
                         }
@@ -327,21 +321,7 @@ function JoinGame()
     end
 
     local args = {}
-    if JSON.auto_join_mode == "Story" then
-        task.wait(1)
-        args = {
-            [1] = {
-                ["StageSelect"] = tostring(JSON.auto_join_level),
-                ["Image"] = "",
-                ["FriendOnly"] = true,
-                ["Difficult"] = JSON.auto_join_difficulty
-            }
 
-        }
-        game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
-        task.wait(1)
-        clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
-    end
 end
 
 local Player = game:GetService("Players").LocalPlayer
@@ -481,57 +461,20 @@ Tabs.Lobby:CreateToggle({
         Save()
 
         if value then
-            task.spawn(function()
-
-            end)
+            task.spawn()
         end
     end
 })
 
-local StoryLevel = 0
-local ClearedStages = game.Players.LocalPlayer.Data.ClearedStages.Value
-
-local stageValues = string.split(ClearedStages, ",")
-
-for _, stage in ipairs(stageValues) do
-    local stageNum = tonumber(stage)
-    if stageNum and stageNum > StoryLevel then
-        StoryLevel = stageNum + 1
-    end
-end
-
-Tabs.Lobby:CreateSlider({
-    Name = "Story Mode Level",
-    Range = {1, StoryLevel},
-    Increment = 1,
-    Suffix = "level",
-    CurrentValue = JSON.auto_join_level,
-    Flag = "Slider1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
-    Callback = function(Value)
-        JSON.auto_join_level = Value
-        Save()
-    end
-})
 Tabs.Lobby:CreateSlider({
     Name = "Auto Join Delay",
-    Range = {1, 60},
+    Range = {0, 60},
     Increment = 1,
     Suffix = "seconds",
     CurrentValue = JSON.auto_join_delay,
     Flag = "Slider1",
     Callback = function(Value)
         JSON.auto_join_delay = Value
-        Save()
-    end
-})
-Tabs.Lobby:CreateDropdown({
-    Name = "Story Difficulty",
-    Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = {JSON.auto_join_difficulty},
-    MultipleOptions = false,
-    Flag = "Dropdown1",
-    Callback = function(Option)
-        JSON.auto_join_difficulty = Option[1]
         Save()
     end
 })
@@ -555,21 +498,21 @@ end
 local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
-    CurrentOption = JSON.macro_profile,
+    CurrentOption = {JSON.macro_profile},
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
-        print(Option)
-        JSON.macro_profile = Option[1]
-        if Macros[Option[1]] == nil then
-            Macros[Option[1]] = {}
+
+        JSON.macro_profile = Option
+        if Macros[Option] == nil then
+            Macros[Option] = {}
         end
 
         Save()
 
         Rayfield:Notify({
             Title = "Macro Profile",
-            Content = "Using " .. Option[1],
+            Content = "Using " .. Option,
             Duration = 6.5,
             Image = 4483362458,
             Actions = { -- Notification Buttons
@@ -592,7 +535,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
         JSON.macro_record = Value
-
+        Save()
         if not Value then
             Rayfield:Notify({
                 Title = "Macro",
@@ -611,7 +554,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 }
             })
         else
-            Macros[JSON.profile_name] = {}
+
             Rayfield:Notify({
                 Title = "Macro",
                 Content = "Recording Macro :" .. JSON.macro_profile,
@@ -630,7 +573,6 @@ local Macro_Record = Tabs.Macro:CreateToggle({
             })
             SetToggle("Playback", false)
         end
-        Save()
     end
 })
 
@@ -644,6 +586,7 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
 
         if Value then
             task.spawn(MacroPlayback)
+            SetToggle("Record", false)
         end
     end
 })
@@ -661,7 +604,7 @@ local profile_name_text = Tabs.Macro:CreateInput({
     end
 })
 
-Tabs.Macro:CreateButton({
+local Button = Tabs.Macro:CreateButton({
     Name = "Create Profile",
     Callback = function()
         if Macros[profile_name] ~= nil then
@@ -695,38 +638,12 @@ Tabs.Macro:CreateButton({
     end
 })
 
-Tabs.Macro:CreateButton({
+local Button = Tabs.Macro:CreateButton({
     Name = "Clear Profile",
     Callback = function()
-        Macros[JSON.macro_profile] = {}
-        Save()
-    end
-})
-
-Tabs.Macro:CreateButton({
-    Name = "Delete Profile",
-    Callback = function()
-        if table.getn(profile_list) == 1 then
-            venyx:Notify("Macro Profile", "Cannot remove last profile.")
-            return
-        else
-            local removed_profile_name = JSON.macro_profile
-            delfile(folder_name .. "/" .. JSON.macro_profile .. ".json")
-            Macros[JSON.macro_profile] = nil
-            table.remove(profile_list, table.find(profile_list, removed_profile_name))
-
-            for _, v in pairs(profile_list) do
-                if v ~= nil then
-                    JSON.macro_profile = v
-                    break
-                end
-            end
-
+        if Macros[profile_name] then
+            Macros[profile_name] = {}
             Save()
-
-         
-            Macro_list:Refresh(profile_list)
-            Macro_list:Set(JSON.macro_profile)
         end
     end
 })
@@ -791,15 +708,4 @@ function SetToggle(Toggle, value)
     elseif Toggle == "Playback" then
         Macro_Playback:Set(value)
     end
-end
-
-function clickUI(gui)
-    local GuiService = game:GetService("GuiService")
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-
-    GuiService.SelectedObject = gui
-
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-    task.wait(0.2)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
