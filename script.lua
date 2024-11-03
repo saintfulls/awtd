@@ -72,7 +72,6 @@ if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
 
-
 end
 
 for _, file in pairs(listfiles(folder_name)) do
@@ -98,15 +97,6 @@ end) then
     JSON = DefaultSettings
 end
 
-local function ensureStringFields()
-    if typeof(JSON.macro_profile) == "table" then
-        JSON.macro_profile = "Default Profile"  -- or some other default value you want
-    end
-    if typeof(JSON.auto_join_difficulty) == "table" then
-        JSON.auto_join_difficulty = "Normal"  -- or some other default value you want
-    end
-end
-
 function SaveMacros()
     for profile_name, macro_table in pairs(Macros) do
         local save_data = {}
@@ -114,10 +104,9 @@ function SaveMacros()
         writefile(folder_name .. "/" .. profile_name .. ".json", game:GetService("HttpService"):JSONEncode(save_data))
     end
 end
-ensureStringFields()
 
 function Save()
-    ensureStringFields()
+
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(JSON))
     SaveMacros()
 end
@@ -130,9 +119,6 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
-if not isfile(folder_name.."/"..JSON.macro_profile..".json") and  isfile(folder_name.."/".."Default Profile.json") then
-    JSON.macro_profile = "Default Profile"
-end
 function MacroPlayback()
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
@@ -350,7 +336,7 @@ function JoinGame()
                 ["FriendOnly"] = true,
                 ["Difficult"] = JSON.auto_join_difficulty
             }
-           
+
         }
         game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
         task.wait(1)
@@ -495,8 +481,8 @@ Tabs.Lobby:CreateToggle({
         Save()
 
         if value then
-            task.spawn(function ()
-                
+            task.spawn(function()
+
             end)
         end
     end
@@ -524,8 +510,8 @@ Tabs.Lobby:CreateSlider({
     Callback = function(Value)
         JSON.auto_join_level = Value
         Save()
-    end,
- })
+    end
+})
 Tabs.Lobby:CreateSlider({
     Name = "Auto Join Delay",
     Range = {1, 60},
@@ -541,13 +527,13 @@ Tabs.Lobby:CreateSlider({
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = {JSON.auto_join_difficulty}, 
+    CurrentOption = {JSON.auto_join_difficulty},
     MultipleOptions = false,
-    Flag = "Dropdown1", 
+    Flag = "Dropdown1",
     Callback = function(Option)
-        JSON.auto_join_difficulty = Option 
+        JSON.auto_join_difficulty = Option
         Save()
-    end,
+    end
 })
 
 local Macro_Main = Tabs.Macro:CreateSection("Main")
@@ -569,7 +555,7 @@ end
 local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
-    CurrentOption = {JSON.macro_profile},
+    CurrentOption = {JSON.macro_profile or "None"},
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
@@ -717,6 +703,34 @@ Tabs.Macro:CreateButton({
     end
 })
 
+Tabs.Macro:CreateButton({
+    Name = "Delete Profile",
+    Callback = function()
+        if table.getn(profile_list) == 1 then
+            venyx:Notify("Macro Profile", "Cannot remove last profile.")
+            return
+        else
+            local removed_profile_name = JSON.macro_profile
+            delfile(folder_name .. "/" .. JSON.macro_profile .. ".json")
+            Macros[JSON.macro_profile] = nil
+            table.remove(profile_list, table.find(profile_list, removed_profile_name))
+
+            for _, v in pairs(profile_list) do
+                if v ~= nil then
+                    JSON.macro_profile = v
+                    break
+                end
+            end
+
+            Save()
+
+         
+            Macro_list:Refresh(profile_list)
+            Macro_list:Set(JSON.macro_profile)
+        end
+    end
+})
+
 local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
 
 Tabs.Macro:CreateToggle({
@@ -770,7 +784,6 @@ Tabs.Macro:CreateToggle({
 })
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
-
 
 function SetToggle(Toggle, value)
     if Toggle == "Record" then
