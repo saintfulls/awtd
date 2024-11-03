@@ -337,13 +337,13 @@ function JoinGame()
                 ["StageSelect"] = tostring(JSON.auto_join_level),
                 ["Image"] = "",
                 ["FriendOnly"] = true,
-                ["Difficult"] = JSON.auto_join_difficulty
+                ["Difficult"] = JSON.auto_join_difficulty[1]
             }
            
         }
         game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
         task.wait(0.3)
-        firesignal(game.Players.LocalPlayer.PlayerGui.InRoomUI.RoomUI.QuickStart.TextButton.Activated)
+        firesignal(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton.Activated)
     end
 end
 
