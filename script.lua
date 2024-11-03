@@ -125,7 +125,7 @@ function MacroPlayback()
         local remote_arguments = v[2]
         local money = v[3]
 
-        local parameters = remote_arguments[2]
+        local parameters = remote_arguments
         local action = parameters[3]
         repeat
             task.wait()
@@ -226,7 +226,7 @@ if game.PlaceId ~= 6558526079 then
 
         if Args and (method == "FireServer" or method == "InvokeServer") then
             if JSON.macro_record and not JSON.macro_playback then
-                if Args[1] ~= nil or self.Name == "SkipEvent" then
+                
                     money = GetMoney()
                     if self.Name == "SpawnUnit" and JSON.macro_summon then
                         table.insert(Macros[JSON.macro_profile], {
@@ -278,7 +278,7 @@ if game.PlaceId ~= 6558526079 then
                     task.spawn(function()
                         Save()
                     end)
-                end
+                
             end
         end
 
