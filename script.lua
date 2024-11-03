@@ -337,7 +337,7 @@ function JoinGame()
                 ["StageSelect"] = tostring(JSON.auto_join_level),
                 ["Image"] = "",
                 ["FriendOnly"] = true,
-                ["Difficult"] = JSON.auto_join_difficulty[1]
+                ["Difficult"] = JSON.auto_join_difficulty
             }
            
         }
