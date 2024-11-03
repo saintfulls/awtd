@@ -555,11 +555,11 @@ end
 local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
-    CurrentOption = {JSON.macro_profile or "None"},
+    CurrentOption = JSON.macro_profile,
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
-
+        print(Option)
         JSON.macro_profile = Option
         if Macros[Option] == nil then
             Macros[Option] = {}
