@@ -147,7 +147,7 @@ function MacroPlayback()
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
         end
         if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
-           
+
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
@@ -181,7 +181,9 @@ function MacroPlayback()
             end
         end
         if parameters[1] == "SkipWave" and JSON.macro_skipwave then
-            game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
+            if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible then
+                game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
+            end
         end
 
         task.wait(0.24)
@@ -535,7 +537,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
         JSON.macro_record = Value
-        Save()
+
         if not Value then
             Rayfield:Notify({
                 Title = "Macro",
@@ -554,7 +556,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 }
             })
         else
-
+            Macros[JSON.profile_name] = {}
             Rayfield:Notify({
                 Title = "Macro",
                 Content = "Recording Macro :" .. JSON.macro_profile,
@@ -573,6 +575,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
             })
             SetToggle("Playback", false)
         end
+        Save()
     end
 })
 
@@ -586,7 +589,6 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
 
         if Value then
             task.spawn(MacroPlayback)
-            SetToggle("Record", false)
         end
     end
 })
@@ -641,10 +643,8 @@ local Button = Tabs.Macro:CreateButton({
 local Button = Tabs.Macro:CreateButton({
     Name = "Clear Profile",
     Callback = function()
-        if Macros[profile_name] then
-            Macros[profile_name] = {}
-            Save()
-        end
+        Macros[JSON.macro_profile] = {}
+        Save()
     end
 })
 
