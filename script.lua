@@ -774,6 +774,6 @@ function clickUI(gui)
     GuiService.SelectedObject = gui
 
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-    task.wait(0.04)
+    task.wait(0.2)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
