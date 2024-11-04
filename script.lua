@@ -376,7 +376,7 @@ else
         task.spawn(JoinGame)
     end
 end
-local Rayfield = loadstring(game:HttpGet('https://raw.githubusercontent.com/UI-Interface/CustomFIeld/main/RayField.lua'))()
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Window = Rayfield:CreateWindow({
     Name = "Sapphire Hub",
@@ -525,11 +525,11 @@ Tabs.Lobby:CreateSlider({
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = JSON.auto_join_difficulty,
-    MultiSelection  = false,
+    CurrentOption = {JSON.auto_join_difficulty},
+    MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
-        JSON.auto_join_difficulty = Option
+        JSON.auto_join_difficulty = Option[1]
         Save()
     end
 })
@@ -553,21 +553,21 @@ end
 local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
-    CurrentOption = JSON.macro_profile,
-    MultiSelection  = false,
+    CurrentOption = {JSON.macro_profile},
+    MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
-        print(Option)
-        JSON.macro_profile = Option
-        if Macros[Option] == nil then
-            Macros[Option] = {}
+        print(Option[1])
+        JSON.macro_profile = Option[1]
+        if Macros[JSON.macro_profile] == nil then
+            Macros[JSON.macro_profile] = {}
         end
 
         Save()
 
         Rayfield:Notify({
             Title = "Macro Profile",
-            Content = "Using " .. Option,
+            Content = "Using " .. JSON.macro_profile,
             Duration = 6.5,
             Image = 4483362458,
             Actions = { -- Notification Buttons
@@ -626,7 +626,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
 
                 }
             })
-            SetToggle("Playback", false)
+        
         end
         Save()
     end
@@ -783,13 +783,6 @@ Tabs.Macro:CreateToggle({
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
 
-function SetToggle(Toggle, value)
-    if Toggle == "Record" then
-        Macro_Record:Set(value)
-    elseif Toggle == "Playback" then
-        Macro_Playback:Set(value)
-    end
-end
 
 function clickUI(gui)
     local GuiService = game:GetService("GuiService")
