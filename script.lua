@@ -236,19 +236,15 @@ if game.PlaceId ~= 6558526079 then
 
                 money = GetMoney()
                 if self.Name == "SpawnUnit" and JSON.macro_summon then
-                    workspace.Units.ChildAdded:Connect(function(child)
-                        if child.Name == Args[1] then
-                            table.insert(Macros[JSON.macro_profile], {
-                                [1] = timeElapsed(),
-                                [2] = {
-                                    [1] = Args[1],
-                                    [2] = CFrameToTable(Args[2]),
-                                    [3] = self.Name 
-                                },
-                                [3] = money
-                            })
-                        end
-                    end)
+                    table.insert(Macros[JSON.macro_profile], {
+                        [1] = timeElapsed(),
+                        [2] = {
+                            [1] = Args[1],
+                            [2] = CFrameToTable(Args[2]),
+                            [3] = self.Name
+                        },
+                        [3] = money
+                    })
                 elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
@@ -345,6 +341,11 @@ function JoinGame()
             game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
             task.wait(1)
             clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+        end
+        
+        if JSON.auto_join_increment_story then
+            JSON.auto_join_level = JSON.auto_join_level + 1
+            Save()
         end
     end
 end
@@ -496,12 +497,6 @@ Tabs.Lobby:CreateToggle({
     Callback = function(value)
         JSON.auto_join_increment_story = value
         Save()
-
-        if value then
-            task.spawn(function()
-
-            end)
-        end
     end
 })
 
@@ -528,7 +523,6 @@ Tabs.Lobby:CreateDropdown({
         Save()
     end
 })
-
 
 Tabs.Lobby:CreateSlider({
     Name = "Story Mode Level",
@@ -578,7 +572,6 @@ local Macro_list = Tabs.Macro:CreateDropdown({
     MultipleOptions = false,
     Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
-        print(Option[1])
         JSON.macro_profile = Option[1]
         if Macros[JSON.macro_profile] == nil then
             Macros[JSON.macro_profile] = {}
