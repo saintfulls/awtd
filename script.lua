@@ -609,7 +609,6 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 }
             })
         else
-            Macros[JSON.profile_name] = {}
             Rayfield:Notify({
                 Title = "Macro",
                 Content = "Recording Macro :" .. JSON.macro_profile,
@@ -668,9 +667,9 @@ Tabs.Macro:CreateButton({
                 Content = "Macro already exists :" .. profile_name,
                 Duration = 6.5,
                 Image = 4483362458,
-                Actions = { -- Notification Buttons
+                Actions = {
 
-                    Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                    Ignore = {
                         Name = "Okay!",
                         Callback = function()
 
@@ -705,7 +704,22 @@ Tabs.Macro:CreateButton({
     Name = "Delete Profile",
     Callback = function()
         if table.getn(profile_list) == 1 then
-            venyx:Notify("Macro Profile", "Cannot remove last profile.")
+           Rayfield:Notify({
+                Title = "Macro Profile",
+                Content = "Can't delete last profile",
+                Duration = 6.5,
+                Image = 4483362458,
+                Actions = {
+
+                    Ignore = {
+                        Name = "Okay!",
+                        Callback = function()
+
+                        end
+                    }
+
+                }
+            })
             return
         else
             local removed_profile_name = JSON.macro_profile
