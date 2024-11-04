@@ -316,7 +316,16 @@ function timeElapsed()
 end
 
 function AutomaticChangeSpeed()
+    while JSON.auto_2x do
+        if workspace.TimeSpeed.Value == 2 then
+            local args = {
+                [1] = "x2 Speed"
+            }
 
+            game:GetService("ReplicatedStorage").Remote.x2Event:FireServer(unpack(args))
+        end
+        wait()
+    end
 end
 
 function JoinGame()
