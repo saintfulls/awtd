@@ -35,7 +35,8 @@ local DefaultSettings = {
     auto_join_increment_story = false,
     auto_start_game = false,
     auto_join_difficulty = "Normal",
-    auto_join_mode = "Story"
+    auto_join_mode = "Story",
+    auto_join_endless_mode = "Random Enemy"
 }
 
 -- Make required folders if they don't exist
@@ -235,15 +236,19 @@ if game.PlaceId ~= 6558526079 then
 
                 money = GetMoney()
                 if self.Name == "SpawnUnit" and JSON.macro_summon then
-                    table.insert(Macros[JSON.macro_profile], {
-                        [1] = timeElapsed(),
-                        [2] = {
-                            [1] = Args[1],
-                            [2] = CFrameToTable(Args[2]),
-                            [3] = self.Name
-                        },
-                        [3] = money
-                    })
+                    workspace.Units.ChildAdded:Connect(function(child)
+                        if child.Name == Args[1] then
+                            table.insert(Macros[JSON.macro_profile], {
+                                [1] = timeElapsed(),
+                                [2] = {
+                                    [1] = Args[1],
+                                    [2] = CFrameToTable(Args[2]),
+                                    [3] = self.Name 
+                                },
+                                [3] = money
+                            })
+                        end
+                    end)
                 elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
@@ -327,18 +332,20 @@ function JoinGame()
 
     local args = {}
     if JSON.auto_join_mode == "Story" then
-        args = {
-            [1] = {
-                ["StageSelect"] = tostring(JSON.auto_join_level),
-                ["Image"] = "",
-                ["FriendOnly"] = true,
-                ["Difficult"] = JSON.auto_join_difficulty
-            }
+        if JSON.auto_join_level then
+            args = {
+                [1] = {
+                    ["StageSelect"] = tostring(JSON.auto_join_level),
+                    ["Image"] = "",
+                    ["FriendOnly"] = true,
+                    ["Difficult"] = JSON.auto_join_difficulty
+                }
 
-        }
-        game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
-        task.wait(1)
-        clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+            }
+            game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+            task.wait(1)
+            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+        end
     end
 end
 
@@ -452,7 +459,19 @@ Tabs.Game:CreateToggle({
     end
 })
 
-local Lobby_Main = Tabs.Lobby:CreateSection("Toggles")
+local Lobby_Main = Tabs.Lobby:CreateSection("Modes")
+
+Tabs.Lobby:CreateDropdown({
+    Name = "Game modes",
+    Options = {"Story", "Endless", "Raid", "Event", "Lengend Stages"},
+    CurrentOption = {JSON.auto_join_mode},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_mode = Option[1]
+        Save()
+    end
+})
 
 Tabs.Lobby:CreateToggle({
     Name = "Auto Join Game",
@@ -468,7 +487,7 @@ Tabs.Lobby:CreateToggle({
     end
 })
 
-local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
+local Lobby_Second = Tabs.Lobby:CreateSection("Story Settings")
 
 Tabs.Lobby:CreateToggle({
     Name = "Auto Next Story Level",
@@ -498,6 +517,19 @@ for _, stage in ipairs(stageValues) do
     end
 end
 
+Tabs.Lobby:CreateDropdown({
+    Name = "Story Difficulty",
+    Options = {"Normal", "Insane", "Nightmare", "Challenger"},
+    CurrentOption = {JSON.auto_join_difficulty},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_difficulty = Option[1]
+        Save()
+    end
+})
+
+
 Tabs.Lobby:CreateSlider({
     Name = "Story Mode Level",
     Range = {1, StoryLevel},
@@ -519,17 +551,6 @@ Tabs.Lobby:CreateSlider({
     Flag = "Slider1",
     Callback = function(Value)
         JSON.auto_join_delay = Value
-        Save()
-    end
-})
-Tabs.Lobby:CreateDropdown({
-    Name = "Story Difficulty",
-    Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = {JSON.auto_join_difficulty},
-    MultipleOptions = false,
-    Flag = "Dropdown1",
-    Callback = function(Option)
-        JSON.auto_join_difficulty = Option[1]
         Save()
     end
 })
@@ -625,7 +646,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
 
                 }
             })
-        
+
         end
         Save()
     end
@@ -704,7 +725,7 @@ Tabs.Macro:CreateButton({
     Name = "Delete Profile",
     Callback = function()
         if table.getn(profile_list) == 1 then
-           Rayfield:Notify({
+            Rayfield:Notify({
                 Title = "Macro Profile",
                 Content = "Can't delete last profile",
                 Duration = 6.5,
@@ -736,7 +757,6 @@ Tabs.Macro:CreateButton({
 
             Save()
 
-         
             Macro_list:Refresh(profile_list)
             Macro_list:Set(JSON.macro_profile)
         end
@@ -796,7 +816,6 @@ Tabs.Macro:CreateToggle({
 })
 
 local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
-
 
 function clickUI(gui)
     local GuiService = game:GetService("GuiService")
