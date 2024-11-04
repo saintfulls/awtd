@@ -317,7 +317,7 @@ end
 
 function AutomaticChangeSpeed()
     while JSON.auto_2x do
-        if workspace.TimeSpeed.Value == 2 then
+        if workspace.TimeSpeed.Value ~= 2 then
             local args = {
                 [1] = "x2 Speed"
             }
