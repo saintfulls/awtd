@@ -87,20 +87,18 @@ local macroMapList = {
     ["Infinite"] = {}
 }
 
-local function generateStoryMapData(mapList)
+local function getWorldByStage(stageValue, mapList)
     local storyStageToWorld = {}
     local cumulativeStage = 0
 
-    if mapList["Story"] then
-        for _, world in ipairs(mapList["Story"]) do
-            for i = 1, world.levels do
-                cumulativeStage = cumulativeStage + 1
-                storyStageToWorld[cumulativeStage] = world.name
-            end
+    for _, world in ipairs(mapList["Story"]) do
+        for i = 1, world.levels do
+            cumulativeStage = cumulativeStage + 1
+            storyStageToWorld[cumulativeStage] = world.name
         end
     end
 
-    return storyStageToWorld
+    return storyStageToWorld[stageValue]
 end
 
 if not isfolder("SapphireHub") then
@@ -183,25 +181,27 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
-local stageToWorld = generateStoryMapData(macroMapList)
+
 function MacroPlayback()
-    
+
     if workspace.StageSelect ~= nil then
         local stageValue = workspace.StageSelect.Value
-        local selectedWorld = stageToWorld[stageValue]
-    
+        local selectedWorld = getWorldByStage(stageValue, macroMapList)
+
         if selectedWorld then
             print("Selected stage:", stageValue)
-            print("The world is", selectedWorld)
+            print("The world is:", selectedWorld)
 
-            if JSON.Macro_Maps_Profile["Story"][selectedWorld] then
+            if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
                 JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
             else
-                print("World profile not found for", selectedWorld)
+                print("World profile not found for:", selectedWorld)
             end
         else
             print("World not found for the selected stage:", stageValue)
         end
+    else
+        print("StageSelect not found in workspace.")
     end
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
