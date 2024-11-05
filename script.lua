@@ -88,23 +88,19 @@ local macroMapList = {
 }
 
 local function generateStoryMapData(mapList)
-    local storyMapNumber = {}
     local storyStageToWorld = {}
     local cumulativeStage = 0
 
     if mapList["Story"] then
         for _, world in ipairs(mapList["Story"]) do
-            local worldLevels = {}
             for i = 1, world.levels do
                 cumulativeStage = cumulativeStage + 1
-                table.insert(worldLevels, cumulativeStage)
                 storyStageToWorld[cumulativeStage] = world.name
             end
-            storyMapNumber[world.name] = worldLevels
         end
     end
 
-    return storyMapNumber, storyStageToWorld
+    return storyStageToWorld
 end
 
 if not isfolder("SapphireHub") then
@@ -188,15 +184,22 @@ for k, v in pairs(DefaultSettings) do
 end
 
 function MacroPlayback()
-    local macroMapNumber, stageToWorld = generateStoryMapData(macroMapList)
+    local stageToWorld = generateStoryMapData(macroMapList)
     if workspace.StageSelect ~= nil then
-        local selectedWorld = stageToWorld[workspace.StageSelect.Value]
-        print(stageToWorld[workspace.StageSelect.Value])
-        if selectedWorld and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
-            JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+        local stageValue = workspace.StageSelect.Value
+        local selectedWorld = stageToWorld[stageValue]
+    
+        if selectedWorld then
+            print("Selected stage:", stageValue)
             print("The world is", selectedWorld)
+
+            if JSON.Macro_Maps_Profile["Story"][selectedWorld] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+            else
+                print("World profile not found for", selectedWorld)
+            end
         else
-            print("World not found for the selected stage:", workspace.StageSelect.Value)
+            print("World not found for the selected stage:", stageValue)
         end
     end
     table.sort(Macros[JSON.macro_profile], function(a, b)
