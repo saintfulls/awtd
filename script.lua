@@ -42,25 +42,49 @@ local DefaultSettings = {
 
 local macroMapList = {
     ["Story"] = {
-        "To Be Hokage",
-        "Dragon Orb",
-        "East Island",
-        "Peace Symbol",
-        "Katamura Danger",
-        "Demon Sister 1st",
-        "Demon Sister 2nd",
-        "Jo-Mission",
-        "Chainsaw Devil",
-        "Arranca Invation 1st",
-        "Arranca Invation 2nd",
-        "Sorcerer School",
-        "String Kingdom"
+        { name = "To Be Hokage", levels = 5 },
+        { name = "Dragon Orb", levels = 5 },
+        { name = "East Island", levels = 5 },
+        { name = "Peace Symbol", levels = 5 },
+        { name = "Katamura Danger", levels = 5 },
+        { name = "Demon Sister 1st", levels = 1 },
+        { name = "Demon Sister 2nd", levels = 4 },
+        { name = "Jo-Mission", levels = 5 },
+        { name = "Chainsaw Devil", levels = 5 },
+        { name = "Arranca Invation 1st", levels = 2 },
+        { name = "Arranca Invation 2nd", levels = 3 },
+        { name = "Sorcerer School", levels = 5 },
+        { name = "String Kingdom", levels = 5 }
     },
-
     ["Infinite"] = {
-
+       
     },
 }
+
+
+local function generateStoryMapData(mapList)
+    local storyMapNumber = {}
+    local storyStageToWorld = {}
+    local cumulativeStage = 0
+
+    if mapList["Story"] then
+        for _, world in ipairs(mapList["Story"]) do
+            local worldLevels = {}
+            for i = 1, world.levels do
+                cumulativeStage = cumulativeStage + 1
+                table.insert(worldLevels, cumulativeStage)
+                storyStageToWorld[cumulativeStage] = world.name
+            end
+            storyMapNumber[world.name] = worldLevels
+        end
+    end
+
+    return storyMapNumber, storyStageToWorld
+end
+
+
+
+
 if not isfolder("SapphireHub") then
     makefolder("SapphireHub")
 end
@@ -142,6 +166,12 @@ for k, v in pairs(DefaultSettings) do
 end
 
 function MacroPlayback()
+    local macroMapNumber, stageToWorld = generateStoryMapData(macroMapList)
+    
+    if stageToWorld[workspace.StageSelect.Value] and JSON.Macro_Maps_Profile["Story"][stageToWorld[workspace.StageSelect.Value]] ~= nil then
+        JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][stageToWorld[workspace.StageSelect.Value]]
+        print("The world is", stageToWorld[workspace.StageSelect.Value])
+    end
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -854,7 +884,6 @@ for tabName, mapsList in pairs(macroMapList) do
                 MultipleOptions = false,
                 Callback = function(Option)
                     JSON.Macro_Maps_Profile["Story"][mapName] = Option[1]
-                
                     Save()
             
                     Rayfield:Notify({
