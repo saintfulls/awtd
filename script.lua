@@ -36,10 +36,31 @@ local DefaultSettings = {
     auto_start_game = false,
     auto_join_difficulty = "Normal",
     auto_join_mode = "Story",
-    auto_join_endless_mode = "Random Enemy"
+    auto_join_endless_mode = "Random Enemy",
+    Macro_Maps_Profile = {Story = {}, Infinite = {}, }
 }
 
--- Make required folders if they don't exist
+local macroMapList = {
+    ["Story"] = {
+        "To Be Hokage",
+        "Dragon Orb",
+        "East Island",
+        "Peace Symbol",
+        "Katamura Danger",
+        "Demon Sister 1st",
+        "Demon Sister 2nd",
+        "Jo-Mission",
+        "Chainsaw Devil",
+        "Arranca Invation 1st",
+        "Arranca Invation 2nd",
+        "Sorcerer School",
+        "String Kingdom"
+    },
+
+    ["Infinite"] = {
+
+    },
+}
 if not isfolder("SapphireHub") then
     makefolder("SapphireHub")
 end
@@ -352,10 +373,9 @@ function JoinGame()
             clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
         end
         
-        if JSON.auto_join_increment_story then
-            JSON.auto_join_level = JSON.auto_join_level + 1
-            Save()
-        end
+       if JSON.auto_join_increment_story then
+            JSON.auto_join_increment_story = JSON.auto_join_increment_story + 1
+       end
     end
 end
 
@@ -425,6 +445,7 @@ local Tabs = {
     Game = Window:CreateTab("Game", 4483362458),
     Lobby = Window:CreateTab("Lobby", 4483362458),
     Macro = Window:CreateTab("Macro", 4483362458),
+    MacroMaps = Window:CreateTab("Macro Maps", 4483362458),
     Webhook = Window:CreateTab("Webhook", 4483362458),
     Miscellaneous = Window:CreateTab("Miscellaneous", 4483362458)
 }
@@ -521,6 +542,11 @@ for _, stage in ipairs(stageValues) do
     end
 end
 
+if JSON.auto_join_level > StoryLevel then
+    JSON.auto_join_level = StoryLevel
+    Save()
+end
+
 Tabs.Lobby:CreateDropdown({
     Name = "Story Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
@@ -579,7 +605,6 @@ local Macro_list = Tabs.Macro:CreateDropdown({
     Options = profile_list,
     CurrentOption = {JSON.macro_profile},
     MultipleOptions = false,
-    Flag = "Dropdown1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Option)
         JSON.macro_profile = Option[1]
         if Macros[JSON.macro_profile] == nil then
@@ -817,7 +842,42 @@ Tabs.Macro:CreateToggle({
     end
 })
 
-local Macro_Maps = Tabs.Macro:CreateSection("Macro Maps")
+Tabs.MacroMaps:CreateSection("Story")
+
+for tabName, mapsList in pairs(macroMapList) do
+    for _, mapName in ipairs(mapsList) do
+        if tabName == "Story" then
+            Tabs.MacroMaps:CreateDropdown({
+                Name = mapName,
+                Options = profile_list,
+                CurrentOption = {JSON.Macro_Maps_Profile["Story"][mapName]},
+                MultipleOptions = false,
+                Callback = function(Option)
+                    JSON.Macro_Maps_Profile["Story"][mapName] = Option[1]
+                
+                    Save()
+            
+                    Rayfield:Notify({
+                        Title = "Macro Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["Story"][mapName],
+                        Duration = 6.5,
+                        Image = 4483362458,
+                        Actions = { -- Notification Buttons
+            
+                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                                Name = "Okay!",
+                                Callback = function()
+            
+                                end
+                            }
+            
+                        }
+                    })
+                end
+            })
+        end
+    end
+end
 
 function clickUI(gui)
     local GuiService = game:GetService("GuiService")
