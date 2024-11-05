@@ -37,30 +37,55 @@ local DefaultSettings = {
     auto_join_difficulty = "Normal",
     auto_join_mode = "Story",
     auto_join_endless_mode = "Random Enemy",
-    Macro_Maps_Profile = {Story = {}, Infinite = {}, }
+    Macro_Maps_Profile = {
+        Story = {},
+        Infinite = {}
+    }
 }
 
 local macroMapList = {
-    ["Story"] = {
-        { name = "To Be Hokage", levels = 5 },
-        { name = "Dragon Orb", levels = 5 },
-        { name = "East Island", levels = 5 },
-        { name = "Peace Symbol", levels = 5 },
-        { name = "Katamura Danger", levels = 5 },
-        { name = "Demon Sister 1st", levels = 1 },
-        { name = "Demon Sister 2nd", levels = 4 },
-        { name = "Jo-Mission", levels = 5 },
-        { name = "Chainsaw Devil", levels = 5 },
-        { name = "Arranca Invation 1st", levels = 2 },
-        { name = "Arranca Invation 2nd", levels = 3 },
-        { name = "Sorcerer School", levels = 5 },
-        { name = "String Kingdom", levels = 5 }
-    },
-    ["Infinite"] = {
-       
-    },
+    ["Story"] = {{
+        name = "To Be Hokage",
+        levels = 5
+    }, {
+        name = "Dragon Orb",
+        levels = 5
+    }, {
+        name = "East Island",
+        levels = 5
+    }, {
+        name = "Peace Symbol",
+        levels = 5
+    }, {
+        name = "Katamura Danger",
+        levels = 5
+    }, {
+        name = "Demon Sister 1st",
+        levels = 1
+    }, {
+        name = "Demon Sister 2nd",
+        levels = 4
+    }, {
+        name = "Jo-Mission",
+        levels = 5
+    }, {
+        name = "Chainsaw Devil",
+        levels = 5
+    }, {
+        name = "Arranca Invation 1st",
+        levels = 2
+    }, {
+        name = "Arranca Invation 2nd",
+        levels = 3
+    }, {
+        name = "Sorcerer School",
+        levels = 5
+    }, {
+        name = "String Kingdom",
+        levels = 5
+    }},
+    ["Infinite"] = {}
 }
-
 
 local function generateStoryMapData(mapList)
     local storyMapNumber = {}
@@ -81,9 +106,6 @@ local function generateStoryMapData(mapList)
 
     return storyMapNumber, storyStageToWorld
 end
-
-
-
 
 if not isfolder("SapphireHub") then
     makefolder("SapphireHub")
@@ -167,10 +189,15 @@ end
 
 function MacroPlayback()
     local macroMapNumber, stageToWorld = generateStoryMapData(macroMapList)
-    
-    if stageToWorld[workspace.StageSelect.Value] and JSON.Macro_Maps_Profile["Story"][stageToWorld[workspace.StageSelect.Value]] ~= nil then
-        JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][stageToWorld[workspace.StageSelect.Value]]
-        print("The world is", stageToWorld[workspace.StageSelect.Value])
+    if workspace.StageSelect ~= nil then
+        local selectedWorld = stageToWorld[workspace.StageSelect.Value]
+        print(stageToWorld[workspace.StageSelect.Value])
+        if selectedWorld and JSON.Macro_Maps_Profile["Story"][selectedWorld] ~= nil then
+            JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+            print("The world is", selectedWorld)
+        else
+            print("World not found for the selected stage:", workspace.StageSelect.Value)
+        end
     end
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
@@ -402,10 +429,10 @@ function JoinGame()
             task.wait(1)
             clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
         end
-        
-       if JSON.auto_join_increment_story then
+
+        if JSON.auto_join_increment_story then
             JSON.auto_join_increment_story = JSON.auto_join_increment_story + 1
-       end
+        end
     end
 end
 
@@ -885,21 +912,21 @@ for tabName, mapsList in pairs(macroMapList) do
                 Callback = function(Option)
                     JSON.Macro_Maps_Profile["Story"][mapName.name] = Option[1]
                     Save()
-            
+
                     Rayfield:Notify({
                         Title = "Macro Maps Profile",
                         Content = "Using " .. JSON.Macro_Maps_Profile["Story"][mapName.name],
                         Duration = 6.5,
                         Image = 4483362458,
                         Actions = { -- Notification Buttons
-            
+
                             Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
                                 Name = "Okay!",
                                 Callback = function()
-            
+
                                 end
                             }
-            
+
                         }
                     })
                 end
