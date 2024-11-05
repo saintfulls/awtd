@@ -185,7 +185,7 @@ end
 function MacroPlayback()
 
     if workspace.StageSelect ~= nil then
-        local stageValue = workspace.StageSelect.Value
+        local stageValue = tonumber(workspace.StageSelect.Value)
         local selectedWorld = getWorldByStage(stageValue, macroMapList)
 
         if selectedWorld then
