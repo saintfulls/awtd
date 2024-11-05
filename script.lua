@@ -183,8 +183,9 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
+local stageToWorld = generateStoryMapData(macroMapList)
 function MacroPlayback()
-    local stageToWorld = generateStoryMapData(macroMapList)
+    
     if workspace.StageSelect ~= nil then
         local stageValue = workspace.StageSelect.Value
         local selectedWorld = stageToWorld[stageValue]
