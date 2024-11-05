@@ -192,7 +192,7 @@ function MacroPlayback()
     if workspace.StageSelect ~= nil then
         local selectedWorld = stageToWorld[workspace.StageSelect.Value]
         print(stageToWorld[workspace.StageSelect.Value])
-        if selectedWorld and JSON.Macro_Maps_Profile["Story"][selectedWorld] ~= nil then
+        if selectedWorld and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
             JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
             print("The world is", selectedWorld)
         else
