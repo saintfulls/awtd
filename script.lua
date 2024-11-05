@@ -878,17 +878,17 @@ for tabName, mapsList in pairs(macroMapList) do
     for _, mapName in ipairs(mapsList) do
         if tabName == "Story" then
             Tabs.MacroMaps:CreateDropdown({
-                Name = mapName,
+                Name = mapName.name,
                 Options = profile_list,
-                CurrentOption = {JSON.Macro_Maps_Profile["Story"][mapName]},
+                CurrentOption = {JSON.Macro_Maps_Profile["Story"][mapName.name]},
                 MultipleOptions = false,
                 Callback = function(Option)
-                    JSON.Macro_Maps_Profile["Story"][mapName] = Option[1]
+                    JSON.Macro_Maps_Profile["Story"][mapName.name] = Option[1]
                     Save()
             
                     Rayfield:Notify({
-                        Title = "Macro Profile",
-                        Content = "Using " .. JSON.Macro_Maps_Profile["Story"][mapName],
+                        Title = "Macro Maps Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["Story"][mapName.name],
                         Duration = 6.5,
                         Image = 4483362458,
                         Actions = { -- Notification Buttons
