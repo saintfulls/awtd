@@ -42,7 +42,8 @@ local DefaultSettings = {
         Infinite = {},
         Raid = {},
         legend_stage = {},
-        EventStage = {}
+        EventStage = {},
+        Other = {}
     }
 }
 
