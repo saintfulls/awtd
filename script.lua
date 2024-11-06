@@ -39,7 +39,10 @@ local DefaultSettings = {
     auto_join_endless_mode = "Random Enemy",
     Macro_Maps_Profile = {
         Story = {},
-        Infinite = {}
+        Infinite = {},
+        Raid = {},
+        legend_stage = {},
+        EventStage = {}
     }
 }
 
@@ -84,7 +87,10 @@ local macroMapList = {
         name = "String Kingdom",
         levels = 5
     }},
-    ["Infinite"] = {}
+    ["Infinite"] = {},
+    ["Raid"] = {
+        "Exploding Planet"
+    }
 }
 
 local function getWorldByStage(stageValue, mapList)
@@ -168,7 +174,6 @@ function SaveMacros()
 end
 
 function Save()
-
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(JSON))
     SaveMacros()
 end
@@ -185,24 +190,34 @@ end
 function MacroPlayback()
 
     if workspace.StageSelect ~= nil then
-        local stageValue = tonumber(workspace.StageSelect.Value)
-        local selectedWorld = getWorldByStage(stageValue, macroMapList)
-
-        if selectedWorld then
-            print("Selected stage:", stageValue)
-            print("The world is:", selectedWorld)
-
-            if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
-                JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+        local stageValue = workspace.StageSelect.Value
+    
+        if tonumber(stageValue) then
+            stageValue = tonumber(stageValue)
+            local selectedWorld = getWorldByStage(stageValue, macroMapList)
+    
+            if selectedWorld then
+                print("Selected stage:", stageValue)
+                print("The world is:", selectedWorld)
+    
+                if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
+                    JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+                else
+                    print("World profile not found for:", selectedWorld)
+                end
             else
-                print("World profile not found for:", selectedWorld)
+                print("World not found for the selected stage:", stageValue)
             end
-        else
-            print("World not found for the selected stage:", stageValue)
+        elseif table.find(macroMapList.Raid, stageValue) then
+            print("Selected Raid:", stageValue)
+            if JSON.Macro_Maps_Profile["Raid"] and JSON.Macro_Maps_Profile["Raid"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["Raid"][stageValue]
+            end
         end
     else
         print("StageSelect not found in workspace.")
     end
+    
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -317,7 +332,7 @@ if game.PlaceId ~= 6558526079 then
             if JSON.macro_record and not JSON.macro_playback then
 
                 money = GetMoney()
-                if self.Name == "SpawnUnit" and JSON.macro_summon then
+                if self.Name == "SpawnUnit" then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
@@ -327,7 +342,7 @@ if game.PlaceId ~= 6558526079 then
                         },
                         [3] = money
                     })
-                elseif self.Name == "UpgradeUnit" and JSON.macro_upgrade then
+                elseif self.Name == "UpgradeUnit" then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
@@ -337,7 +352,7 @@ if game.PlaceId ~= 6558526079 then
                         },
                         [3] = money
                     })
-                elseif self.Name == "ChangeUnitModeFunction" and JSON.macro_changepriority then
+                elseif self.Name == "ChangeUnitModeFunction" then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
@@ -346,7 +361,7 @@ if game.PlaceId ~= 6558526079 then
                             [3] = self.Name
                         }
                     })
-                elseif self.Name == "SellUnit" and JSON.macro_sell then
+                elseif self.Name == "SellUnit" then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
@@ -355,7 +370,7 @@ if game.PlaceId ~= 6558526079 then
                             [3] = self.Name
                         }
                     })
-                elseif self.Name == "SkipEvent" and JSON.macro_skipwave then
+                elseif self.Name == "SkipEvent" then
                     table.insert(Macros[JSON.macro_profile], {
                         [1] = timeElapsed(),
                         [2] = {
@@ -501,6 +516,8 @@ local Window = Rayfield:CreateWindow({
         Key = {"Hello"}
     }
 })
+
+local StoryDropDown = {}
 
 local Tabs = {
     Game = Window:CreateTab("Game", 4483362458),
@@ -699,7 +716,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
     Flag = "Toggle1", -- A flag is the identifier for the configuration file, make sure every element has a different flag if you're using configuration saving to ensure no overlaps
     Callback = function(Value)
         JSON.macro_record = Value
-
+        Save()
         if not Value then
             Rayfield:Notify({
                 Title = "Macro",
@@ -736,7 +753,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
             })
 
         end
-        Save()
+       
     end
 })
 
@@ -753,6 +770,7 @@ local Macro_Playback = Tabs.Macro:CreateToggle({
         end
     end
 })
+
 
 local profile_name = ""
 
@@ -847,11 +865,12 @@ Tabs.Macro:CreateButton({
 
             Macro_list:Refresh(profile_list)
             Macro_list:Set(JSON.macro_profile)
+
         end
     end
 })
 
-local Macro_Settings = Tabs.Macro:CreateSection("Macro Settings")
+local Macro_Settings = Tabs.Macro:CreateSection("Playback Settings")
 
 Tabs.Macro:CreateToggle({
     Name = "Summon Unit",
@@ -908,7 +927,7 @@ Tabs.MacroMaps:CreateSection("Story")
 for tabName, mapsList in pairs(macroMapList) do
     for _, mapName in ipairs(mapsList) do
         if tabName == "Story" then
-            Tabs.MacroMaps:CreateDropdown({
+            local dropdown = Tabs.MacroMaps:CreateDropdown({
                 Name = mapName.name,
                 Options = profile_list,
                 CurrentOption = {JSON.Macro_Maps_Profile["Story"][mapName.name]},
@@ -935,9 +954,53 @@ for tabName, mapsList in pairs(macroMapList) do
                     })
                 end
             })
+            table.insert(StoryDropDown, dropdown)
         end
     end
 end
+
+Tabs.MacroMaps:CreateSection("Raid")
+
+for tabName, mapsList in pairs(macroMapList) do
+    for _, mapName in ipairs(mapsList) do
+        if tabName == "Raid" then
+            local dropdown = Tabs.MacroMaps:CreateDropdown({
+                Name = mapName.name,
+                Options = profile_list,
+                CurrentOption = {JSON.Macro_Maps_Profile["Raid"][mapName.name]},
+                MultipleOptions = false,
+                Callback = function(Option)
+                    JSON.Macro_Maps_Profile["Raid"][mapName.name] = Option[1]
+                    Save()
+
+                    Rayfield:Notify({
+                        Title = "Macro Maps Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["Raid"][mapName.name],
+                        Duration = 6.5,
+                        Image = 4483362458,
+                        Actions = { -- Notification Buttons
+
+                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                                Name = "Okay!",
+                                Callback = function()
+
+                                end
+                            }
+
+                        }
+                    })
+                end
+            })
+            table.insert(StoryDropDown, dropdown)
+        end
+    end
+end
+
+Tabs.MacroMaps:CreateSection("Infinity")
+
+Tabs.MacroMaps:CreateSection("Legend Stage")
+
+Tabs.MacroMaps:CreateSection("Event")
 
 function clickUI(gui)
     local GuiService = game:GetService("GuiService")
@@ -946,6 +1009,6 @@ function clickUI(gui)
     GuiService.SelectedObject = gui
 
     VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-    task.wait(0.2)
+    task.wait(0.1)
     VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
 end
