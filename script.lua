@@ -37,6 +37,9 @@ local DefaultSettings = {
     auto_join_difficulty = "Normal",
     auto_join_mode = "Story",
     auto_join_endless_mode = "Random Enemy",
+    auto_join_raid_stage = "",
+    auto_join_legend_stage = "",
+    auto_join_event_stage = "",
     Macro_Maps_Profile = {
         Story = {},
         Infinite = {},
@@ -88,9 +91,38 @@ local macroMapList = {
         name = "String Kingdom",
         levels = 5
     }},
-    ["Infinite"] = {},
+    ["Infinite"] = {
+        "Endless Spider Forest",
+        "Endless Snow Hill",
+        "Random Enemy",
+        "Darkness Tower"
+    },
     ["Raid"] = {
-        "Exploding Planet"
+        "Charuto Bridge",
+        "Exploding Planet",
+
+    },
+    ["Event"] = {
+        "Forbidden Graveyard",
+        "Training Field",
+        "Boss Rush",
+        "Random Unit",
+        "Metal Rush",
+        "Blue Element",
+        "Green Element",
+        "Purple Element",
+        "Yellow Element",
+        "Red Element"
+    },
+    ["Legend Stage"] = {
+        "Paradox Invasion",
+        "Victory Valley",
+        "Dream Island",
+        "Ruin Society",
+        "Shadow Realm",
+        "Idol Concert",
+        "Evil Pink Dungeon",
+
     }
 }
 
@@ -213,6 +245,23 @@ function MacroPlayback()
             print("Selected Raid:", stageValue)
             if JSON.Macro_Maps_Profile["Raid"] and JSON.Macro_Maps_Profile["Raid"][stageValue] then
                 JSON.macro_profile = JSON.Macro_Maps_Profile["Raid"][stageValue]
+            end
+        elseif table.find(macroMapList["Infinite"], stageValue) then
+            print("Selected Infinite:", stageValue)
+            if JSON.Macro_Maps_Profile["Infinite"] and JSON.Macro_Maps_Profile["Infinite"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["Infinite"][stageValue]
+            end
+        
+        elseif table.find(macroMapList["Legend Stage"], stageValue) then
+            print("Selected Stage:", stageValue)
+            if JSON.Macro_Maps_Profile["legend_stage"] and JSON.Macro_Maps_Profile["legend_stage"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["legend_stage"][stageValue]
+            end
+        
+        elseif table.find(macroMapList["Event"], stageValue) then
+            print("Selected Stage:", stageValue)
+            if JSON.Macro_Maps_Profile["EventStage"] and JSON.Macro_Maps_Profile["EventStage"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["EventStage"][stageValue]
             end
         end
     else
@@ -417,7 +466,7 @@ function AutomaticChangeSpeed()
     while JSON.auto_2x do
         if workspace.TimeSpeed.Value ~= 2 then
             local args = {
-                [1] = "x2 Speed"
+                [1] = "x1 Speed"
             }
 
             game:GetService("ReplicatedStorage").Remote.x2Event:FireServer(unpack(args))
@@ -452,6 +501,21 @@ function JoinGame()
 
         if JSON.auto_join_increment_story then
             JSON.auto_join_increment_story = JSON.auto_join_increment_story + 1
+        end
+    elseif JSON.auto_join_mode == "Endless" then
+        if JSON.auto_join_endless_mode then
+            args = {
+                [1] = {
+                    ["StageSelect"] = tostring(JSON.auto_join_endless_mode),
+                    ["Image"] = "",
+                    ["FriendOnly"] = true,
+                    ["Difficult"] = JSON.auto_join_difficulty
+                }
+
+            }
+            game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+            task.wait(1)
+            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
         end
     end
 end
@@ -573,7 +637,7 @@ local Lobby_Main = Tabs.Lobby:CreateSection("Modes")
 
 Tabs.Lobby:CreateDropdown({
     Name = "Game modes",
-    Options = {"Story", "Endless", "Raid", "Event", "Lengend Stages"},
+    Options = {"Story", "Endless", "Raid", "Event", "Legend Stages"},
     CurrentOption = {JSON.auto_join_mode},
     MultipleOptions = false,
     Flag = "Dropdown1",
@@ -597,7 +661,55 @@ Tabs.Lobby:CreateToggle({
     end
 })
 
-local Lobby_Second = Tabs.Lobby:CreateSection("Story Settings")
+local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
+
+Tabs.Lobby:CreateDropdown({
+    Name = "Raid Mode",
+    Options = macroMapList.Raid,
+    CurrentOption = {JSON.auto_join_raid_stage},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_raid_stage = Option[1]
+        Save()
+    end
+})
+
+Tabs.Lobby:CreateDropdown({
+    Name = "Event Stage",
+    Options = macroMapList.Event,
+    CurrentOption = {JSON.auto_join_event_stage},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_event_stage = Option[1]
+        Save()
+    end
+})
+
+Tabs.Lobby:CreateDropdown({
+    Name = "Endless Mode",
+    Options = macroMapList["Infinite"],
+    CurrentOption = {JSON.auto_join_endless_mode},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_endless_mode = Option[1]
+        Save()
+    end
+})
+
+Tabs.Lobby:CreateDropdown({
+    Name = "Legend Stage",
+    Options = macroMapList["Legend Stage"],
+    CurrentOption = {JSON.auto_join_legend_stage},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(Option)
+        JSON.auto_join_legend_stage = Option[1]
+        Save()
+    end
+})
 
 Tabs.Lobby:CreateToggle({
     Name = "Auto Next Story Level",
@@ -627,7 +739,7 @@ if JSON.auto_join_level > StoryLevel then
 end
 
 Tabs.Lobby:CreateDropdown({
-    Name = "Story Difficulty",
+    Name = "Difficulty",
     Options = {"Normal", "Insane", "Nightmare", "Challenger"},
     CurrentOption = {JSON.auto_join_difficulty},
     MultipleOptions = false,
@@ -997,7 +1109,7 @@ for tabName, mapsList in pairs(macroMapList) do
     end
 end
 
-Tabs.MacroMaps:CreateSection("Infinity")
+Tabs.MacroMaps:CreateSection("Endless")
 
 Tabs.MacroMaps:CreateSection("Legend Stage")
 
