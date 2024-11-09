@@ -47,11 +47,12 @@ local DefaultSettings = {
         legend_stage = {},
         EventStage = {},
         Other = {}
-    }
+    },
+    auto_replay = false,
 }
 
 local macroMapList = {
-    ["Story"] = {{
+    ["Story"] = { {
         name = "To Be Hokage",
         levels = 5
     }, {
@@ -90,7 +91,7 @@ local macroMapList = {
     }, {
         name = "String Kingdom",
         levels = 5
-    }},
+    } },
     ["Infinite"] = {
         "Endless Spider Forest",
         "Endless Snow Hill",
@@ -100,6 +101,18 @@ local macroMapList = {
     ["Raid"] = {
         "Charuto Bridge",
         "Exploding Planet",
+        "Exploding Planet 2nd Stage",
+        "MarineFord",
+        "Hero City",
+        "Katamura City",
+        "Spider MT.",
+        "Pillar Cave",
+        "Katana Revenge",
+        "Soul Hall",
+        "Tomb of the Star",
+        "String Kingdom",
+        "Shinobi Battleground",
+
 
     },
     ["Event"] = {
@@ -158,8 +171,8 @@ local JSON, Macros, startTime, startTimeOffset
 local folder_name = "SapphireHub/Anime World Tower Defense/" .. game.Players.LocalPlayer.UserId
 
 if not pcall(function()
-    readfile(SettingsFile)
-end) then
+        readfile(SettingsFile)
+    end) then
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(DefaultSettings))
 end
 
@@ -172,28 +185,27 @@ end
 if #listfiles(folder_name) == 0 then
     writefile(folder_name .. "/" .. "Default Profile.json",
         game:GetService("HttpService"):JSONEncode(MacroDefaultSettings))
-
 end
 
 for _, file in pairs(listfiles(folder_name)) do
     if not pcall(function()
-        local json_content = game:GetService("HttpService"):JSONDecode(readfile(file))
+            local json_content = game:GetService("HttpService"):JSONDecode(readfile(file))
 
-        for k, v in pairs(json_content) do
-            if Macros[k] ~= nil then
-                delfile(file)
-            else
-                Macros[k] = v
+            for k, v in pairs(json_content) do
+                if Macros[k] ~= nil then
+                    delfile(file)
+                else
+                    Macros[k] = v
+                end
             end
-        end
-    end) then
+        end) then
         print("Error reading file: " .. file)
     end
 end
 
 if not pcall(function()
-    JSON = game:GetService("HttpService"):JSONDecode(readfile(SettingsFile))
-end) then
+        JSON = game:GetService("HttpService"):JSONDecode(readfile(SettingsFile))
+    end) then
     writefile(SettingsFile, game:GetService("HttpService"):JSONEncode(DefaultSettings))
     JSON = DefaultSettings
 end
@@ -219,20 +231,102 @@ for k, v in pairs(DefaultSettings) do
     end
 end
 
+local foundAnything = ""
+
+function TPReturner()
+    local PlaceID = game.PlaceId
+    local AllIDs = {}
+    local actualHour = os.date("!*t").hour
+    local File = pcall(function()
+        AllIDs = game:GetService('HttpService'):JSONDecode(readfile(
+            "SapphireHub/Anime World Tower Defense/" ..
+            "NotSameServers.json"))
+    end)
+    if not File then
+        table.insert(AllIDs, actualHour)
+        writefile("SapphireHub/Anime World Tower Defense/" ..
+            "NotSameServers.json",
+            game:GetService('HttpService'):JSONEncode(AllIDs))
+    end
+    local Site;
+    if foundAnything == "" then
+        Site = game.HttpService:JSONDecode(game:HttpGet(
+            'https://games.roblox.com/v1/games/' ..
+            PlaceID ..
+            '/servers/Public?sortOrder=Asc&limit=100'))
+    else
+        Site = game.HttpService:JSONDecode(game:HttpGet(
+            'https://games.roblox.com/v1/games/' ..
+            PlaceID ..
+            '/servers/Public?sortOrder=Asc&limit=100&cursor=' ..
+            foundAnything))
+    end
+    local ID = ""
+    if Site.nextPageCursor and Site.nextPageCursor ~= "null" and
+        Site.nextPageCursor ~= nil then
+        foundAnything = Site.nextPageCursor
+    end
+    local num = 0;
+    for i, v in pairs(Site.data) do
+        local Possible = true
+        ID = tostring(v.id)
+        if tonumber(v.maxPlayers) > tonumber(v.playing) then
+            for _, Existing in pairs(AllIDs) do
+                if num ~= 0 then
+                    if ID == tostring(Existing) then
+                        Possible = false
+                    end
+                else
+                    if tonumber(actualHour) ~= tonumber(Existing) then
+                        local delFile = pcall(function()
+                            delfile("NotSameServers.json")
+                            AllIDs = {}
+                            table.insert(AllIDs, actualHour)
+                        end)
+                    end
+                end
+                num = num + 1
+            end
+            if Possible == true then
+                table.insert(AllIDs, ID)
+                task.wait()
+                pcall(function()
+                    writefile("NotSameServers.json",
+                        game:GetService('HttpService'):JSONEncode(AllIDs))
+                    task.wait()
+                    game:GetService("TeleportService"):TeleportToPlaceInstance(
+                        PlaceID, ID, game.Players.LocalPlayer)
+                end)
+                task.wait(4)
+            end
+        end
+    end
+end
+
+function Teleport()
+    while task.wait() do
+        pcall(function()
+            TPReturner()
+            if foundAnything ~= "" then TPReturner() end
+        end)
+    end
+end
 
 function MacroPlayback()
 
+    if game.PlaceID == 6558526079 then return end
+
     if workspace.StageSelect ~= nil then
         local stageValue = workspace.StageSelect.Value
-    
+
         if tonumber(stageValue) then
             stageValue = tonumber(stageValue)
             local selectedWorld = getWorldByStage(stageValue, macroMapList)
-    
+
             if selectedWorld then
                 print("Selected stage:", stageValue)
                 print("The world is:", selectedWorld)
-    
+
                 if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
                     JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
                 else
@@ -251,13 +345,11 @@ function MacroPlayback()
             if JSON.Macro_Maps_Profile["Infinite"] and JSON.Macro_Maps_Profile["Infinite"][stageValue] then
                 JSON.macro_profile = JSON.Macro_Maps_Profile["Infinite"][stageValue]
             end
-        
         elseif table.find(macroMapList["Legend Stage"], stageValue) then
             print("Selected Stage:", stageValue)
             if JSON.Macro_Maps_Profile["legend_stage"] and JSON.Macro_Maps_Profile["legend_stage"][stageValue] then
                 JSON.macro_profile = JSON.Macro_Maps_Profile["legend_stage"][stageValue]
             end
-        
         elseif table.find(macroMapList["Event"], stageValue) then
             print("Selected Stage:", stageValue)
             if JSON.Macro_Maps_Profile["EventStage"] and JSON.Macro_Maps_Profile["EventStage"][stageValue] then
@@ -267,7 +359,7 @@ function MacroPlayback()
     else
         print("StageSelect not found in workspace.")
     end
-    
+
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -294,23 +386,22 @@ function MacroPlayback()
         end
 
         if parameters[3] == "SpawnUnit" and JSON.macro_summon then
-            local args = {parameters[1], TableToCFrame(parameters[2]), 1, {"1", "1", "1", "1"}}
+            local args = { parameters[1], TableToCFrame(parameters[2]), 1, { "1", "1", "1", "1" } }
             game:GetService("ReplicatedStorage").Remote.SpawnUnit:InvokeServer(unpack(args))
         end
         if parameters[3] == "UpgradeUnit" and JSON.macro_summon then
-
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
                     if magnitude == 0 then
-                        local args = {unit}
+                        local args = { unit }
                         game:GetService("ReplicatedStorage").Remote.UpgradeUnit:InvokeServer(unpack(args))
                     end
                 end
             end
         end
         if parameters[3] == "ChangeUnitModeFunction" and JSON.macro_changepriority then
-            local args = {parameters[1]}
+            local args = { parameters[1] }
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[3]).Position).magnitude
@@ -321,7 +412,7 @@ function MacroPlayback()
             end
         end
         if parameters[3] == "SellUnit" and JSON.macro_sell then
-            local args = {parameters[1]}
+            local args = { parameters[1] }
             for _, unit in pairs(game:GetService("Workspace").Units:GetChildren()) do
                 if unit.Name == parameters[1] and unit:WaitForChild("Info").Owner.Value == game.Players.LocalPlayer.Name then
                     local magnitude = (unit.HumanoidRootPart.Position - TableToCFrame(parameters[2]).Position).magnitude
@@ -338,7 +429,6 @@ function MacroPlayback()
         end
 
         task.wait(0.24)
-
     end
 end
 
@@ -352,8 +442,8 @@ function CFrameToTable(cframe)
     local roll = math.atan2(-rightVector.Y, rightVector.X)
 
     return {
-        Position = {position.X, position.Y, position.Z},
-        Angles = {pitch, yaw, roll}
+        Position = { position.X, position.Y, position.Z },
+        Angles = { pitch, yaw, roll }
     }
 end
 
@@ -375,12 +465,11 @@ if game.PlaceId ~= 6558526079 then
 
     game_metatable.__namecall = newcclosure(function(self, ...)
         local method = getnamecallmethod()
-        local Args = {...}
+        local Args = { ... }
         local money
 
         if Args and (method == "FireServer" or method == "InvokeServer") then
             if JSON.macro_record and not JSON.macro_playback then
-
                 money = GetMoney()
                 if self.Name == "SpawnUnit" then
                     table.insert(Macros[JSON.macro_profile], {
@@ -432,7 +521,6 @@ if game.PlaceId ~= 6558526079 then
                 task.spawn(function()
                     Save()
                 end)
-
             end
         end
 
@@ -497,6 +585,10 @@ function JoinGame()
             game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
             task.wait(1)
             clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+            task.wait(60)
+            if JSON.auto_join_game then
+                Teleport()
+            end
         end
 
         if JSON.auto_join_increment_story then
@@ -516,6 +608,68 @@ function JoinGame()
             game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
             task.wait(1)
             clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+            task.wait(60)
+            if JSON.auto_join_game then
+                Teleport()
+            end
+        end
+    elseif JSON.auto_join_mode == "Event" then
+        if JSON.auto_join_event_stage then
+            args = {
+                [1] = {
+                    ["StageSelect"] = tostring(JSON.auto_join_event_stage),
+                    ["Image"] = "",
+                    ["FriendOnly"] = true,
+                    ["Difficult"] = JSON.auto_join_difficulty
+                }
+
+            }
+            game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+            task.wait(1)
+            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+            task.wait(60)
+            if JSON.auto_join_game then
+                Teleport()
+            end
+        end
+    elseif JSON.auto_join_mode == "Raid" then
+        if JSON.auto_join_raid_stage then
+            args = {
+                [1] = {
+                    ["StageSelect"] = tostring(JSON.auto_join_raid_stage),
+                    ["Image"] = "",
+                    ["FriendOnly"] = true,
+                    ["Difficult"] = JSON.auto_join_difficulty
+                }
+
+            }
+            game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+            task.wait(1)
+            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+            task.wait(60)
+            if JSON.auto_join_game then
+                Teleport()
+            end
+        end
+    elseif JSON.auto_join_mode == "Legend Stages" then
+        if JSON.auto_join_endless_mode then
+            args = {
+                [1] = {
+                    ["StageSelect"] = tostring(JSON.auto_join_endless_mode),
+                    ["Image"] = "",
+                    ["FriendOnly"] = true,
+                    ["Difficult"] = JSON.auto_join_difficulty
+                }
+
+            }
+            game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
+            task.wait(1)
+            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+
+            task.wait(60)
+            if JSON.auto_join_game then
+                Teleport()
+            end
         end
     end
 end
@@ -546,7 +700,6 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
                 task.wait()
             end
         end)
-
     end
     task.spawn(StartMacroTimer)
 else
@@ -578,7 +731,7 @@ local Window = Rayfield:CreateWindow({
         FileName = "Key",
         SaveKey = true,
         GrabKeyFromSite = false,
-        Key = {"Hello"}
+        Key = { "Hello" }
     }
 })
 
@@ -596,26 +749,26 @@ local Tabs = {
 local Game_Main = Tabs.Game:CreateSection("Toggles")
 
 Tabs.Game:CreateToggle({
-    Name = "Automatic Start Game",
+    Name = "Automatic Start/Skip",
     CurrentValue = JSON.auto_start_game,
     Flag = "Toggle1",
     Callback = function(Value)
         JSON.auto_start_game = Value
         Save()
-        local Started = false
-
         while Value do
-            if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback and not Started then
+            if not game.Workspace:FindFirstChild("PlayerPortal") and not JSON.macro_playback then
                 if game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
                     game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
                     "[Ready]" then
                     game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
-                    Started = true
+                elseif game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").Visible and
+                    game.Players.LocalPlayer.PlayerGui:WaitForChild("InterFace"):WaitForChild("Skip").topic.Text ==
+                    "Skip?" then
+                    game:GetService("ReplicatedStorage").Remote.SkipEvent:FireServer()
                 end
             end
             task.wait()
         end
-
     end
 })
 
@@ -637,8 +790,8 @@ local Lobby_Main = Tabs.Lobby:CreateSection("Modes")
 
 Tabs.Lobby:CreateDropdown({
     Name = "Game modes",
-    Options = {"Story", "Endless", "Raid", "Event", "Legend Stages"},
-    CurrentOption = {JSON.auto_join_mode},
+    Options = { "Story", "Endless", "Raid", "Event", "Legend Stages" },
+    CurrentOption = { JSON.auto_join_mode },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -661,12 +814,11 @@ Tabs.Lobby:CreateToggle({
     end
 })
 
-local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
-
+Tabs.Lobby:CreateSection("Stages")
 Tabs.Lobby:CreateDropdown({
     Name = "Raid Mode",
     Options = macroMapList.Raid,
-    CurrentOption = {JSON.auto_join_raid_stage},
+    CurrentOption = { JSON.auto_join_raid_stage },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -678,7 +830,7 @@ Tabs.Lobby:CreateDropdown({
 Tabs.Lobby:CreateDropdown({
     Name = "Event Stage",
     Options = macroMapList.Event,
-    CurrentOption = {JSON.auto_join_event_stage},
+    CurrentOption = { JSON.auto_join_event_stage },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -690,7 +842,7 @@ Tabs.Lobby:CreateDropdown({
 Tabs.Lobby:CreateDropdown({
     Name = "Endless Mode",
     Options = macroMapList["Infinite"],
-    CurrentOption = {JSON.auto_join_endless_mode},
+    CurrentOption = { JSON.auto_join_endless_mode },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -702,7 +854,7 @@ Tabs.Lobby:CreateDropdown({
 Tabs.Lobby:CreateDropdown({
     Name = "Legend Stage",
     Options = macroMapList["Legend Stage"],
-    CurrentOption = {JSON.auto_join_legend_stage},
+    CurrentOption = { JSON.auto_join_legend_stage },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -710,6 +862,8 @@ Tabs.Lobby:CreateDropdown({
         Save()
     end
 })
+
+local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
 
 Tabs.Lobby:CreateToggle({
     Name = "Auto Next Story Level",
@@ -720,6 +874,8 @@ Tabs.Lobby:CreateToggle({
         Save()
     end
 })
+
+
 
 local StoryLevel = 0
 local ClearedStages = game.Players.LocalPlayer.Data.ClearedStages.Value
@@ -740,8 +896,8 @@ end
 
 Tabs.Lobby:CreateDropdown({
     Name = "Difficulty",
-    Options = {"Normal", "Insane", "Nightmare", "Challenger"},
-    CurrentOption = {JSON.auto_join_difficulty},
+    Options = { "Normal", "Insane", "Nightmare", "Challenger" },
+    CurrentOption = { JSON.auto_join_difficulty },
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(Option)
@@ -752,7 +908,7 @@ Tabs.Lobby:CreateDropdown({
 
 Tabs.Lobby:CreateSlider({
     Name = "Story Mode Level",
-    Range = {1, StoryLevel},
+    Range = { 1, StoryLevel },
     Increment = 1,
     Suffix = "level",
     CurrentValue = JSON.auto_join_level,
@@ -764,7 +920,7 @@ Tabs.Lobby:CreateSlider({
 })
 Tabs.Lobby:CreateSlider({
     Name = "Auto Join Delay",
-    Range = {0, 60},
+    Range = { 0, 60 },
     Increment = 1,
     Suffix = "seconds",
     CurrentValue = JSON.auto_join_delay,
@@ -794,7 +950,7 @@ end
 local Macro_list = Tabs.Macro:CreateDropdown({
     Name = "Macro List",
     Options = profile_list,
-    CurrentOption = {JSON.macro_profile},
+    CurrentOption = { JSON.macro_profile },
     MultipleOptions = false,
     Callback = function(Option)
         JSON.macro_profile = Option[1]
@@ -809,7 +965,7 @@ local Macro_list = Tabs.Macro:CreateDropdown({
             Content = "Using " .. JSON.macro_profile,
             Duration = 6.5,
             Image = 4483362458,
-            Actions = { -- Notification Buttons
+            Actions = {    -- Notification Buttons
 
                 Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
                     Name = "Okay!",
@@ -836,7 +992,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
                 Content = "Saved Macro :" .. JSON.macro_profile,
                 Duration = 6.5,
                 Image = 4483362458,
-                Actions = { -- Notification Buttons
+                Actions = {    -- Notification Buttons
 
                     Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
                         Name = "Okay!",
@@ -864,9 +1020,7 @@ local Macro_Record = Tabs.Macro:CreateToggle({
 
                 }
             })
-
         end
-       
     end
 })
 
@@ -922,6 +1076,9 @@ Tabs.Macro:CreateButton({
             Macros[profile_name] = {}
             JSON.macro_profile = profile_name
 
+            for _, dropdown in ipairs(StoryDropDown) do
+                dropdown:Refresh()
+            end
             Save()
 
             table.insert(profile_list, profile_name)
@@ -976,9 +1133,12 @@ Tabs.Macro:CreateButton({
 
             Save()
 
+            for _, dropdown in ipairs(StoryDropDown) do
+                dropdown:Refresh()
+            end
+
             Macro_list:Refresh(profile_list)
             Macro_list:Set(JSON.macro_profile)
-
         end
     end
 })
@@ -1043,7 +1203,7 @@ for tabName, mapsList in pairs(macroMapList) do
             local dropdown = Tabs.MacroMaps:CreateDropdown({
                 Name = mapName.name,
                 Options = profile_list,
-                CurrentOption = {JSON.Macro_Maps_Profile["Story"][mapName.name]},
+                CurrentOption = { JSON.Macro_Maps_Profile["Story"][mapName.name] },
                 MultipleOptions = false,
                 Callback = function(Option)
                     JSON.Macro_Maps_Profile["Story"][mapName.name] = Option[1]
@@ -1054,7 +1214,7 @@ for tabName, mapsList in pairs(macroMapList) do
                         Content = "Using " .. JSON.Macro_Maps_Profile["Story"][mapName.name],
                         Duration = 6.5,
                         Image = 4483362458,
-                        Actions = { -- Notification Buttons
+                        Actions = {    -- Notification Buttons
 
                             Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
                                 Name = "Okay!",
@@ -1080,7 +1240,7 @@ for tabName, mapsList in pairs(macroMapList) do
             local dropdown = Tabs.MacroMaps:CreateDropdown({
                 Name = mapName,
                 Options = profile_list,
-                CurrentOption = {JSON.Macro_Maps_Profile["Raid"][mapName]},
+                CurrentOption = { JSON.Macro_Maps_Profile["Raid"][mapName] },
                 MultipleOptions = false,
                 Callback = function(Option)
                     JSON.Macro_Maps_Profile["Raid"][mapName] = Option[1]
@@ -1091,7 +1251,7 @@ for tabName, mapsList in pairs(macroMapList) do
                         Content = "Using " .. JSON.Macro_Maps_Profile["Raid"][mapName],
                         Duration = 6.5,
                         Image = 4483362458,
-                        Actions = { -- Notification Buttons
+                        Actions = {    -- Notification Buttons
 
                             Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
                                 Name = "Okay!",
@@ -1111,9 +1271,113 @@ end
 
 Tabs.MacroMaps:CreateSection("Endless")
 
+for tabName, mapsList in pairs(macroMapList) do
+    for _, mapName in ipairs(mapsList) do
+        if tabName == "Infinite" then
+            local dropdown = Tabs.MacroMaps:CreateDropdown({
+                Name = mapName,
+                Options = profile_list,
+                CurrentOption = { JSON.Macro_Maps_Profile["Infinite"][mapName] },
+                MultipleOptions = false,
+                Callback = function(Option)
+                    JSON.Macro_Maps_Profile["Infinite"][mapName] = Option[1]
+                    Save()
+
+                    Rayfield:Notify({
+                        Title = "Macro Maps Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["Infinite"][mapName],
+                        Duration = 6.5,
+                        Image = 4483362458,
+                        Actions = {    -- Notification Buttons
+
+                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                                Name = "Okay!",
+                                Callback = function()
+
+                                end
+                            }
+
+                        }
+                    })
+                end
+            })
+            table.insert(StoryDropDown, dropdown)
+        end
+    end
+end
 Tabs.MacroMaps:CreateSection("Legend Stage")
 
+for tabName, mapsList in pairs(macroMapList) do
+    for _, mapName in ipairs(mapsList) do
+        if tabName == "Legend Stage" then
+            local dropdown = Tabs.MacroMaps:CreateDropdown({
+                Name = mapName,
+                Options = profile_list,
+                CurrentOption = { JSON.Macro_Maps_Profile["legend_stage"][mapName] },
+                MultipleOptions = false,
+                Callback = function(Option)
+                    JSON.Macro_Maps_Profile["legend_stage"][mapName] = Option[1]
+                    Save()
+
+                    Rayfield:Notify({
+                        Title = "Macro Maps Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["legend_stage"][mapName],
+                        Duration = 6.5,
+                        Image = 4483362458,
+                        Actions = {    -- Notification Buttons
+
+                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                                Name = "Okay!",
+                                Callback = function()
+
+                                end
+                            }
+
+                        }
+                    })
+                end
+            })
+            table.insert(StoryDropDown, dropdown)
+        end
+    end
+end
+
 Tabs.MacroMaps:CreateSection("Event")
+
+for tabName, mapsList in pairs(macroMapList) do
+    for _, mapName in ipairs(mapsList) do
+        if tabName == "Event" then
+            local dropdown = Tabs.MacroMaps:CreateDropdown({
+                Name = mapName,
+                Options = profile_list,
+                CurrentOption = { JSON.Macro_Maps_Profile["EventStage"][mapName] },
+                MultipleOptions = false,
+                Callback = function(Option)
+                    JSON.Macro_Maps_Profile["EventStage"][mapName] = Option[1]
+                    Save()
+
+                    Rayfield:Notify({
+                        Title = "Macro Maps Profile",
+                        Content = "Using " .. JSON.Macro_Maps_Profile["EventStage"][mapName],
+                        Duration = 6.5,
+                        Image = 4483362458,
+                        Actions = {    -- Notification Buttons
+
+                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                                Name = "Okay!",
+                                Callback = function()
+
+                                end
+                            }
+
+                        }
+                    })
+                end
+            })
+            table.insert(StoryDropDown, dropdown)
+        end
+    end
+end
 
 function clickUI(gui)
     local GuiService = game:GetService("GuiService")
