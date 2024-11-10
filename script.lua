@@ -279,7 +279,8 @@ function TPReturner()
                 else
                     if tonumber(actualHour) ~= tonumber(Existing) then
                         local delFile = pcall(function()
-                            delfile("NotSameServers.json")
+                            delfile("SapphireHub/Anime World Tower Defense/" ..
+            "NotSameServers.json")
                             AllIDs = {}
                             table.insert(AllIDs, actualHour)
                         end)
@@ -291,7 +292,8 @@ function TPReturner()
                 table.insert(AllIDs, ID)
                 task.wait()
                 pcall(function()
-                    writefile("NotSameServers.json",
+                    writefile("SapphireHub/Anime World Tower Defense/" ..
+            "NotSameServers.json",
                         game:GetService('HttpService'):JSONEncode(AllIDs))
                     task.wait()
                     game:GetService("TeleportService"):TeleportToPlaceInstance(
