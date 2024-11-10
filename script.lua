@@ -9,7 +9,7 @@ until game.CoreGui:FindFirstChild("RobloxPromptGui")
 local po, ts = game.CoreGui.RobloxPromptGui.promptOverlay, game:GetService("TeleportService")
 
 local teleportOnFailed = po.ChildAdded:Connect(function(a)
-    if a.Name == "ErrorPrompt" then
+    if a.Name == "ErrorPrompt"  then
         repeat
             ts:Teleport(game.GameId)
             task.wait(1)
@@ -313,7 +313,6 @@ function Teleport()
 end
 
 function MacroPlayback()
-
     if game.PlaceID == 6558526079 then return end
 
     if workspace.StageSelect ~= nil then
@@ -456,6 +455,7 @@ function TableToCFrame(cframeTable)
 
     return cframe
 end
+
 
 if game.PlaceId ~= 6558526079 then
     local game_metatable = getrawmetatable(game)
@@ -1361,9 +1361,8 @@ for tabName, mapsList in pairs(macroMapList) do
                         Content = "Using " .. JSON.Macro_Maps_Profile["EventStage"][mapName],
                         Duration = 6.5,
                         Image = 4483362458,
-                        Actions = {    -- Notification Buttons
-
-                            Ignore = { -- Duplicate this table (or remove it) to add and remove buttons to the notification.
+                        Actions = {   
+                            Ignore = {
                                 Name = "Okay!",
                                 Callback = function()
 
@@ -1379,13 +1378,11 @@ for tabName, mapsList in pairs(macroMapList) do
     end
 end
 
+
+
 function clickUI(gui)
-    local GuiService = game:GetService("GuiService")
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-
-    GuiService.SelectedObject = gui
-
-    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-    task.wait(0.1)
-    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+    local VIM = game:GetService("VirtualInputManager")
+    for i = 1, 2 do
+        VIM:SendMouseButtonEvent(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y, 0,({ true, false })[i], game, 1)
+    end
 end
