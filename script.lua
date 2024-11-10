@@ -1380,20 +1380,25 @@ end
 
 function clickUI(gui)
     local userInputService = game:GetService("UserInputService")
+    
+    -- Ensure the GUI is valid and visible
     if gui and gui.Visible then
-      
-        userInputService:InputBegan({
-            UserInputType = Enum.UserInputType.MouseButton1,
-            Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
-        })
-
+        -- Create a MouseButton1 input
+        local mouseInput = Instance.new("InputObject", game)  -- Create a new input object
+        
+        mouseInput.UserInputType = Enum.UserInputType.MouseButton1
+        mouseInput.Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
+        
+        -- Fire InputBegan
+        userInputService.InputBegan:Fire(mouseInput)
+        
+        -- Small delay before simulating the InputEnded
         wait(0.1)
-
-        userInputService:InputEnded({
-            UserInputType = Enum.UserInputType.MouseButton1,
-            Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
-        })
+        
+        -- Fire InputEnded
+        userInputService.InputEnded:Fire(mouseInput)
     else
         warn("GUI element is not valid or not visible.")
     end
 end
+
