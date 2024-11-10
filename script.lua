@@ -626,7 +626,7 @@ function JoinGame()
             }
             game:GetService("ReplicatedStorage").Remote.CreateRoom:FireServer(unpack(args))
             task.wait(1)
-            clickUI(game.Players.LocalPlayer.PlayerGui.InRoomUi.RoomUI.QuickStart.TextButton)
+
             task.wait(60)
             if JSON.auto_join_game then
                 Teleport()
@@ -1378,11 +1378,22 @@ for tabName, mapsList in pairs(macroMapList) do
     end
 end
 
-
-
 function clickUI(gui)
-    local VIM = game:GetService("VirtualInputManager")
-    for i = 1, 2 do
-        VIM:SendMouseButtonEvent(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y, 0,({ true, false })[i], game, 1)
+    local userInputService = game:GetService("UserInputService")
+    if gui and gui.Visible then
+      
+        userInputService:InputBegan({
+            UserInputType = Enum.UserInputType.MouseButton1,
+            Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
+        })
+
+        wait(0.1)
+
+        userInputService:InputEnded({
+            UserInputType = Enum.UserInputType.MouseButton1,
+            Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
+        })
+    else
+        warn("GUI element is not valid or not visible.")
     end
 end
