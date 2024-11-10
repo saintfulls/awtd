@@ -1380,18 +1380,29 @@ for tabName, mapsList in pairs(macroMapList) do
     end
 end
 
+local UserInputService = game:GetService("UserInputService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
 function clickUI(gui)
-    local UserInputService = game:GetService("UserInputService")
-    local VirtualInputManager = game:GetService("VirtualInputManager")
-    
-    local buttonPosition = gui.AbsolutePosition
-    local buttonSize = gui.AbsoluteSize
+    -- Make sure the target GUI is focused
+    local GuiService = game:GetService("GuiService")
+    GuiService.SelectedObject = gui
 
-    local mousePos = Vector2.new(buttonPosition.X + buttonSize.X / 2, buttonPosition.Y + buttonSize.Y / 2)
-    
-    VirtualInputManager:SendMouseButtonEvent(mousePos.X, mousePos.Y, Enum.UserInputType.MouseButton1, true, game)
-    task.wait(0.1)
-    VirtualInputManager:SendMouseButtonEvent(mousePos.X, mousePos.Y, Enum.UserInputType.MouseButton1, false, game)
+    -- Optionally, simulate a click (mouse input) even if a button is blocking
+    local mousePosition = UserInputService:GetMouseLocation()
+
+    -- Ensure the button is under the mouse position before sending the click event
+    if gui.AbsolutePosition.X <= mousePosition.X and mousePosition.X <= gui.AbsolutePosition.X + gui.AbsoluteSize.X and
+       gui.AbsolutePosition.Y <= mousePosition.Y and mousePosition.Y <= gui.AbsolutePosition.Y + gui.AbsoluteSize.Y then
+        -- Simulate a key press or mouse click
+        VirtualInputManager:SendMouseButtonEvent(mousePosition.X, mousePosition.Y, Enum.UserInputType.MouseButton1, true, game)
+        task.wait(0.1) -- Wait for the event to be processed
+        VirtualInputManager:SendMouseButtonEvent(mousePosition.X, mousePosition.Y, Enum.UserInputType.MouseButton1, false, game)
+    else
+        -- Fallback to simulating a keyboard press if necessary
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        task.wait(0.1)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+    end
 end
-
 
