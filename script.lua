@@ -1381,26 +1381,34 @@ for tabName, mapsList in pairs(macroMapList) do
 end
 
 function clickUI(gui)
-    local userInputService = game:GetService("UserInputService")
+    local GuiService = game:GetService("GuiService")
+    local VirtualInputManager = game:GetService("VirtualInputManager")
     
-    -- Ensure the GUI is valid and visible
-    if gui and gui.Visible then
-        -- Create a MouseButton1 input
-        local mouseInput = Instance.new("InputObject", game)  -- Create a new input object
+  
+    if gui and gui.Parent and gui.Enabled and gui.Visible then
+ 
+        local otherUIs = GuiService:GetGuiObjectsAtPosition(gui.AbsolutePosition.X, gui.AbsolutePosition.Y)
         
-        mouseInput.UserInputType = Enum.UserInputType.MouseButton1
-        mouseInput.Position = Vector2.new(gui.AbsolutePosition.X + gui.AbsoluteSize.X / 2, gui.AbsolutePosition.Y + gui.AbsoluteSize.Y / 2)
+        for _, otherGui in pairs(otherUIs) do
+            if otherGui ~= gui and otherGui.Enabled and otherGui.Visible then
+              otherGui.Enabled = false
+            end
+        end
         
-        -- Fire InputBegan
-        userInputService.InputBegan:Fire(mouseInput)
-        
-        -- Small delay before simulating the InputEnded
-        wait(0.1)
-        
-        -- Fire InputEnded
-        userInputService.InputEnded:Fire(mouseInput)
+        GuiService.SelectedObject = gui
+
+        VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
+        task.wait(0.1)
+        VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
+
+        for _, otherGui in pairs(otherUIs) do
+            if otherGui ~= gui then
+                otherGui.Enabled = true
+            end
+        end
     else
-        warn("GUI element is not valid or not visible.")
+        warn("The provided GUI is not visible or enabled.")
     end
 end
+
 
