@@ -317,22 +317,25 @@ end
 function StartAutomaticNextButton()
     repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.CountDown.Text ~= "-"
     if JSON.auto_join_increment_story and not JSON.auto_replay then
-        task.wait(1)
+        task.wait(2)
         clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.NextStage)
         JSON.auto_join_level = JSON.auto_join_level + 1
+        Save()
     end
 end
 
 function StartAutomaticReplayButton()
     repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.CountDown.Text ~= "-"
     if JSON.auto_replay and not JSON.auto_join_increment_story then
-        task.wait(1)
+        task.wait(2)
         clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.Replay)
     end
 end
 
 function MacroPlayback()
-    
+    repeat task.wait() until game.Players.LocalPlayer.leaderstats:FindFirstChild("Cash") ~=
+    nil
+
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
