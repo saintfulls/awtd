@@ -314,9 +314,15 @@ function Teleport()
     end
 end
 
-function MacroPlayback()
-    if game.PlaceID == 6558526079 then return end
+function StartAutomaticNextButton()
+    repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.CountDown.Text ~= "-"
+    if JSON.auto_join_increment_story then
+        clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.Next)
+        JSON.auto_join_level = JSON.auto_join_level + 1
+    end
+end
 
+function MacroPlayback()
     if workspace.StageSelect ~= nil then
         local stageValue = workspace.StageSelect.Value
 
@@ -592,9 +598,6 @@ function JoinGame()
             end
         end
 
-        if JSON.auto_join_increment_story then
-            JSON.auto_join_increment_story = JSON.auto_join_increment_story + 1
-        end
     elseif JSON.auto_join_mode == "Endless" then
         if JSON.auto_join_endless_mode then
             args = {
@@ -684,10 +687,15 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.auto_2x then
         task.spawn(AutomaticChangeSpeed)
     end
+
     if JSON.macro_playback then
         task.spawn(MacroPlayback)
     end
 
+    if JSON.auto_join_increment_story then
+        task.spawn(StartAutomaticNextButton)
+    end
+    
     if JSON.auto_start_game then
         task.spawn(function()
             while JSON.auto_start_game do
@@ -787,6 +795,21 @@ Tabs.Game:CreateToggle({
     end
 })
 
+Tabs.Game:CreateToggle({
+    Name = "Auto Next Level",
+    CurrentValue = JSON.auto_next_story,
+    Flag = "Toggle1",
+    Callback = function(value)
+        JSON.auto_next_story = value
+        Save()
+
+        if value and not game.Workspace:FindFirstChild("PlayerPortal") then
+            task.spawn(AutomaticChangeSpeed)
+        end
+    end
+})
+
+
 local Lobby_Main = Tabs.Lobby:CreateSection("Modes")
 
 Tabs.Lobby:CreateDropdown({
@@ -873,8 +896,22 @@ Tabs.Lobby:CreateToggle({
     Callback = function(value)
         JSON.auto_join_increment_story = value
         Save()
+        if value then
+            task.spawn(StartAutomaticNextButton)
+        end
     end
 })
+
+Tabs.Lobby:CreateToggle({
+    Name = "Auto Replay",
+    CurrentValue = JSON.auto_replay,
+    Flag = "Toggle1",
+    Callback = function(value)
+        JSON.auto_replay = value
+        Save()
+    end
+})
+
 
 
 
