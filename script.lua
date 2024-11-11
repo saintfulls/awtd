@@ -316,57 +316,23 @@ end
 
 function StartAutomaticNextButton()
     repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.CountDown.Text ~= "-"
-    if JSON.auto_join_increment_story then
-        clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.Next)
+    if JSON.auto_join_increment_story and not JSON.auto_replay then
+        task.wait(1)
+        clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.NextStage)
         JSON.auto_join_level = JSON.auto_join_level + 1
     end
 end
 
-function MacroPlayback()
-    if workspace.StageSelect ~= nil then
-        local stageValue = workspace.StageSelect.Value
-
-        if tonumber(stageValue) then
-            stageValue = tonumber(stageValue)
-            local selectedWorld = getWorldByStage(stageValue, macroMapList)
-
-            if selectedWorld then
-                print("Selected stage:", stageValue)
-                print("The world is:", selectedWorld)
-
-                if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
-                    JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
-                else
-                    print("World profile not found for:", selectedWorld)
-                end
-            else
-                print("World not found for the selected stage:", stageValue)
-            end
-        elseif table.find(macroMapList.Raid, stageValue) then
-            print("Selected Raid:", stageValue)
-            if JSON.Macro_Maps_Profile["Raid"] and JSON.Macro_Maps_Profile["Raid"][stageValue] then
-                JSON.macro_profile = JSON.Macro_Maps_Profile["Raid"][stageValue]
-            end
-        elseif table.find(macroMapList["Infinite"], stageValue) then
-            print("Selected Infinite:", stageValue)
-            if JSON.Macro_Maps_Profile["Infinite"] and JSON.Macro_Maps_Profile["Infinite"][stageValue] then
-                JSON.macro_profile = JSON.Macro_Maps_Profile["Infinite"][stageValue]
-            end
-        elseif table.find(macroMapList["Legend Stage"], stageValue) then
-            print("Selected Stage:", stageValue)
-            if JSON.Macro_Maps_Profile["legend_stage"] and JSON.Macro_Maps_Profile["legend_stage"][stageValue] then
-                JSON.macro_profile = JSON.Macro_Maps_Profile["legend_stage"][stageValue]
-            end
-        elseif table.find(macroMapList["Event"], stageValue) then
-            print("Selected Stage:", stageValue)
-            if JSON.Macro_Maps_Profile["EventStage"] and JSON.Macro_Maps_Profile["EventStage"][stageValue] then
-                JSON.macro_profile = JSON.Macro_Maps_Profile["EventStage"][stageValue]
-            end
-        end
-    else
-        print("StageSelect not found in workspace.")
+function StartAutomaticReplayButton()
+    repeat wait() until game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.CountDown.Text ~= "-"
+    if JSON.auto_replay and not JSON.auto_join_increment_story then
+        task.wait(1)
+        clickUI(game:GetService("Players").LocalPlayer.PlayerGui.EndUI.UI.Replay)
     end
+end
 
+function MacroPlayback()
+    
     table.sort(Macros[JSON.macro_profile], function(a, b)
         return a[1] < b[1]
     end)
@@ -688,6 +654,50 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
         task.spawn(AutomaticChangeSpeed)
     end
 
+    if workspace.StageSelect ~= nil then
+        local stageValue = workspace.StageSelect.Value
+
+        if tonumber(stageValue) then
+            stageValue = tonumber(stageValue)
+            local selectedWorld = getWorldByStage(stageValue, macroMapList)
+
+            if selectedWorld then
+                print("Selected stage:", stageValue)
+                print("The world is:", selectedWorld)
+
+                if JSON.Macro_Maps_Profile["Story"] and JSON.Macro_Maps_Profile["Story"][selectedWorld] then
+                    JSON.macro_profile = JSON.Macro_Maps_Profile["Story"][selectedWorld]
+                else
+                    print("World profile not found for:", selectedWorld)
+                end
+            else
+                print("World not found for the selected stage:", stageValue)
+            end
+        elseif table.find(macroMapList.Raid, stageValue) then
+            print("Selected Raid:", stageValue)
+            if JSON.Macro_Maps_Profile["Raid"] and JSON.Macro_Maps_Profile["Raid"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["Raid"][stageValue]
+            end
+        elseif table.find(macroMapList["Infinite"], stageValue) then
+            print("Selected Infinite:", stageValue)
+            if JSON.Macro_Maps_Profile["Infinite"] and JSON.Macro_Maps_Profile["Infinite"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["Infinite"][stageValue]
+            end
+        elseif table.find(macroMapList["Legend Stage"], stageValue) then
+            print("Selected Stage:", stageValue)
+            if JSON.Macro_Maps_Profile["legend_stage"] and JSON.Macro_Maps_Profile["legend_stage"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["legend_stage"][stageValue]
+            end
+        elseif table.find(macroMapList["Event"], stageValue) then
+            print("Selected Stage:", stageValue)
+            if JSON.Macro_Maps_Profile["EventStage"] and JSON.Macro_Maps_Profile["EventStage"][stageValue] then
+                JSON.macro_profile = JSON.Macro_Maps_Profile["EventStage"][stageValue]
+            end
+        end
+    else
+        print("StageSelect not found in workspace.")
+    end
+
     if JSON.macro_playback then
         task.spawn(MacroPlayback)
     end
@@ -695,7 +705,11 @@ if not game.Workspace:FindFirstChild("PlayerPortal") then
     if JSON.auto_join_increment_story then
         task.spawn(StartAutomaticNextButton)
     end
-    
+
+    if JSON.auto_replay then
+        task.spawn(StartAutomaticReplayButton)
+    end
+
     if JSON.auto_start_game then
         task.spawn(function()
             while JSON.auto_start_game do
@@ -795,19 +809,6 @@ Tabs.Game:CreateToggle({
     end
 })
 
-Tabs.Game:CreateToggle({
-    Name = "Auto Next Level",
-    CurrentValue = JSON.auto_next_story,
-    Flag = "Toggle1",
-    Callback = function(value)
-        JSON.auto_next_story = value
-        Save()
-
-        if value and not game.Workspace:FindFirstChild("PlayerPortal") then
-            task.spawn(AutomaticChangeSpeed)
-        end
-    end
-})
 
 
 local Lobby_Main = Tabs.Lobby:CreateSection("Modes")
@@ -890,7 +891,7 @@ Tabs.Lobby:CreateDropdown({
 local Lobby_Second = Tabs.Lobby:CreateSection("Settings")
 
 Tabs.Lobby:CreateToggle({
-    Name = "Auto Next Story Level",
+    Name = "Auto Next Level",
     CurrentValue = JSON.auto_join_increment_story,
     Flag = "Toggle1",
     Callback = function(value)
@@ -909,6 +910,9 @@ Tabs.Lobby:CreateToggle({
     Callback = function(value)
         JSON.auto_replay = value
         Save()
+        if value then
+            task.spawn(StartAutomaticReplayButton)
+        end
     end
 })
 
@@ -1430,12 +1434,12 @@ function clickUI(gui)
         gui.AbsolutePosition.Y <= mousePosition.Y and mousePosition.Y <= gui.AbsolutePosition.Y + gui.AbsoluteSize.Y then
         VirtualInputManager:SendMouseButtonEvent(mousePosition.X, mousePosition.Y, Enum.UserInputType.MouseButton1, true,
             game)
-        task.wait(0.1)
+        task.wait(0.05)
         VirtualInputManager:SendMouseButtonEvent(mousePosition.X, mousePosition.Y, Enum.UserInputType.MouseButton1, false,
             game)
     else
         VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.Return, false, game)
-        task.wait(0.1)
+        task.wait(0.05)
         VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.Return, false, game)
     end
 end
